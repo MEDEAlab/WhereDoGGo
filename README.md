@@ -26,7 +26,7 @@ __        ___                   ____         ____  ____      ___
    \_/\_/  |_| |_|\___|_|  \___|____/ \___/ \____|\____|\___/(_)
 ```
 
-**WhereDoGGo?** (Where Does the Genome Go?) is a user-friendly pipeline for prokaryotic phylogenomics. Its main function is to perform accurate placement of genomes in the taxon of interest all the way to domain level (Bacteria or Archaea), while addressing sources of error in (deep) phylogenies.It includes all necessary steps for any phylogenetic analysis, from picking and downloading genomes, to concatenating protein marker sets, and running a multitude of phylogenetic analyses accounting for various types of errors. WhereDoGGo? comprises of four main modules/steps, plus a number of auxiliary scripts. Below is a short description for each module:
+**WhereDoGGo?** (Where Does my Genome Go?) is a user-friendly pipeline for prokaryotic phylogenomics. Its main function is to perform accurate placement of genomes in the taxon of interest all the way to domain level (Bacteria or Archaea), while addressing sources of error in (deep) phylogenies.It includes all necessary steps for any phylogenetic analysis, from picking and downloading genomes, to concatenating protein marker sets, and running a multitude of phylogenetic analyses accounting for various types of errors. WhereDoGGo? comprises of four main modules/steps, plus a number of auxiliary scripts. Below is a short description for each module:
 
 1. **doggo_fetch**: `doggo_fetch.py` will download genomes and create a local genome database based on GTDB taxonomy, genome stats, and user input.
 
