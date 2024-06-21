@@ -203,13 +203,13 @@ IMPORTANT NOTE: Currently WhereDoGGo? is up-to-date to work with Python 3.12 and
 
 ### Installation
 
-No installation is needed for WhereDoGGo?. Just download the compressed file, extract it to your desired location, also extract the compressed directories within, and place the ‘bin’ directory in your PATH.
-
+No installation is needed for WhereDoGGo?. Just download the compressed file, extract it to your desired location, and place the ‘bin’ directory in your PATH.
 On Linux, this can be done by adding the following line at the end of the hidden ‘.bashrc’ file:
 
 ```
 export PATH="/path/to/WhereDoGGo_version/bin/:$PATH"
 ```
+IMPORTANT: DON'T FORGET TO EXTRACT THE METADATA DIRECTORY CONTAINING PARSED GTDB METADATA SEPARATELY (the files were too large for Github).
 
 ### Citation
 The manuscript for WhereDoGo? is currently under preparation. For now, please cite this GitHub repository. Also cite the programs and libraries used by the different modules as above.
