@@ -182,6 +182,7 @@ IMPORTANT NOTE: Currently WhereDoGGo? is up-to-date to work with Python 3.12 and
 9. [MAFFT]
  ```
  https://anaconda.org/bioconda/mafft
+ Katoh, K. & Standley, D. M. MAFFT Multiple Sequence Alignment Software Version 7: Improvements in Performance and Usability. Molecular Biology and Evolution 30, 772–780 (2013).
  #WhereDoGGo? uses E-INS-i and FFT-NS-2.
  ```
 10. [BMGE]
