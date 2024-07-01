@@ -20,7 +20,7 @@ code="$3"
 
 cat << EndOfMessage
 #Script: createrecords.sh
-#Version: v20240621
+#Version: v20240701
 #Usage: createrecords.sh <contigs> <filext> <code>
 #<contigs> must be the path to the directory containing the genome files (as contigs). (trailing slash optional) (required)
 #<filext> must be the file extension of the genome files. (leading dot optional) (required)

@@ -18,7 +18,7 @@ import os
 import sys
 
 print('#Script: aarecode.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python aarecode.py <input_faa> <output_faa> <alphabet>')
 print('#<input_faa> must be the input protein FASTA file using the complete 20-state amino-acid alphabet. Unknown states are assumed to be X. (required)')
 print('#<output_faa> must be the name of the output recoded FASTA file. (required)')

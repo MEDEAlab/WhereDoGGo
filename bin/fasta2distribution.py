@@ -32,7 +32,7 @@ for nstlobject,link in nonstandardlibraries.items():
 import pandas as pd
 
 print('#Script: fasta2distribution.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python fasta2distribution.py <input_ext> <distribution_file> <assembliesnames_file>')
 print("#<input_ext> must be the filename extension of the input FASTA files. It is assumed that the header will start with the protein accessions, followed by the assembly accession, and then anything else, separated by a space. (required)")
 print('#<distribution_file> must be the name of the output file that will contain the taxonomic distribution of the sequences in the input FASTA files. (required)')

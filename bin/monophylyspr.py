@@ -29,7 +29,7 @@ for nstlobject,link in nonstandardlibraries.items():
 from ete3 import Tree
 
 print('#Script: monophylyspr.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python monophylyspr.py <input_tree> <cluster>')
 print('#<input_tree> must be the input phylogenetic tree in Newick format. Branch supports need to be single values. (required)')
 print('#<cluster> must be a text file containing leaf names (one per line). These leaves are checked if they are monophyletic in <input_tree>. If they are, their branch is pruned and regrafted in all possible positions on the tree. (required)')

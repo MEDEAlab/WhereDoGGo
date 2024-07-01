@@ -32,7 +32,7 @@ fi
 
 cat << EndOfMessage
 #Script: contigs2orfs.sh
-#Version: v20240621
+#Version: v20240701
 #Usage: contigs2orfs.sh <assemblies> <contigs> <filext> <whatwematch> <code25>
 #<assemblies> must be a text file of versionless assemblies (1/line). (required)
 #<contigs> must be the path to the directory containing the genome files (as contigs). (trailing slash optional) (required)

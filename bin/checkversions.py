@@ -57,7 +57,7 @@ for extprg,link in externalprograms.items():
         sys.exit(1)
 
 print('#Script: checkversions.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python checkversions.py')
 print('#For more information refer to the comments in the script and/or the Github page.')
 

@@ -30,7 +30,7 @@ for nstlobject,link in nonstandardlibraries.items():
 from Bio import SeqIO
 
 print('#Script: removemultiples.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python removemultiples.py <input_ext> <output_ext> <output_log>')
 print("#<input_ext> must be the extension of the FASTA files in the working directory that will be checked for sequences with the same accession. The stem of each file is retained for the output and log files. (leading dot optional) (required)")
 print('#<output_ext> must be the extension of the FASTA files where the sequences without multiples will be written. (leading dot optional) (required)')

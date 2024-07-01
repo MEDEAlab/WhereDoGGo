@@ -99,7 +99,7 @@ __        ___                   ____         ____  ____      ___
 
                     """)
 
-parser = argparse.ArgumentParser(description="Henlo, am doggo v20240621. Need halp so I get zoomies?")
+parser = argparse.ArgumentParser(description="Henlo, am doggo v20240701. Need halp so I get zoomies?")
 parser.add_argument("-i", "--input", required=True, help="INPUT must be the input FASTA file. (required)")
 parser.add_argument("-MFP", "--MFP", action='store_true', help="MFP will run IQ-TREE with MODELFINDER to select the model (matrices: LG, WAG, JTT; frequencies: FU,F,FO). (optional)")
 parser.add_argument("-C60", "--C60", action='store_true', help="C60 will run IQ-TREE with the C60 mixture model under the matrix picked by MFP (and with the MFP phylogeny as guide tree under the PMSF approximation) or LG (if the MFP log and phylogeny not available) and 10 FreeRate categories i.e., LG (or WAG or JTT )+C60+R10. (optional)")
@@ -114,7 +114,7 @@ parser.add_argument("-AUclade", "--AUclade", required=False, help="AUclade must 
 parser.add_argument("-leaves", "--leaves", required=True, help="LEAVES must be a text file with complete leaf names that will be used to converting them in the phylogenies e.g., an .assembliesnames file. All instances of tab-delimitation will be converted to spaces. (required)")
 args=parser.parse_args()
 
-print('Henlo, am doggo v20240621. I get zoomies nao. I speak info messages in hooman lingo.' + '\n')
+print('Henlo, am doggo v20240701. I get zoomies nao. I speak info messages in hooman lingo.' + '\n')
 
 concat_file_stem = str(os.path.basename(args.input).split(os.extsep, 1)[0])
 concat_file_ext = str('.' + str(os.path.basename(args.input).split(os.extsep, 1)[1])) # we have to add the '.' before the extension

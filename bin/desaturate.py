@@ -36,7 +36,7 @@ import numpy as np
 import pandas as pd
 
 print('#Script: desaturate.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python desaturate.py <rates> <quantiles> <alignment>')
 print('#<input_rates> must be a file containing site-specific rates for <input_alignment> produced by IQ-TREE\'s --rate or --mlrate options. (required)')
 print('#<input_quantiles> must be the number (integer) of quantiles of retained positions. The original alignment, the empty alignment, and anything with more than 90% of positions removed are omitted. For example, for <input_quantiles> = 20, 18 alignments will be produced from 5% of positions retained, up to 90%. (required)')

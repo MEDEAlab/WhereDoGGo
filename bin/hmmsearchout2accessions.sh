@@ -19,7 +19,7 @@ filext="$1"
 
 cat << EndOfMessage
 #Script: hmmsearchout2accessions.sh
-#Version: v20240621
+#Version: v20240701
 #Usage: hmmsearchout2accessions.sh <filext>
 #<filext> must be the filename extension of the HMMER -tblout files from which accessions will be extracted. (leading dot optional) (required)
 #Accessions must not contain spaces, since it's used as a delimiter in the file.

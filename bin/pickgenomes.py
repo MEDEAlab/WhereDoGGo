@@ -18,7 +18,7 @@ import os
 import sys
 
 print('#Script: pickgenomes.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python pickgenomes.py <input_tsv> <tax_level> <tax_resolution> <number> <ignore_list>')
 print('#<input_tsv> must be a tab-delimited file as per GTDB\'s metadata files for Bacteria or Archaea. (required)')
 print('#<tax_level> must be the highest taxonomic level for genomes to be selected as presented in GTDB taxonomy strings e.g. p__Asgardarchaeota (i.e., get genomes from within <tax_level>). (required)')

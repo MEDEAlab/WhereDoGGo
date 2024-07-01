@@ -34,7 +34,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 
 print('#Script: fuseadjacent.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python fuseadjacent.py <input_ext> <output_ext>')
 print('#must be the extension of the alignment FASTA files in the working directory that will be checked for adjacent fragmented sequences. Temporary files with unfused and fused sequences in single-line FASTA (aka nice FASTA) will be created. The stem of each file is retained for the temporary and output files. (leading dot optional). (required)')
 print('#<output_ext> must be the extension of the FASTA files where the fused and unfused sequences sequences will be written in single-line format. (leading dot optional) (required)')

@@ -18,7 +18,7 @@ filext="$1"
 
 cat << EndOfMessage
 #Script: preconcatenation.sh
-#Version: v20240621
+#Version: v20240701
 #Usage: preconcatenation.sh <filext>
 #<filext> must be the filename extension of the alignment files. (leading dot optional) (required)
 #For more information refer to the comments in the script and/or the Github page.

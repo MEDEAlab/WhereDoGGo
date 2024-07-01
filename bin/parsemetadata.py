@@ -15,7 +15,7 @@ import os
 import sys
 
 print('#Script: parsemetadata.py')
-print('#Version: v20240621')
+print('#Version: v20240701')
 print('#Usage: python parsemetadata.py <input_file> <output_file>')
 print('#<input_file> must be tab-delimited GTDB metadata. (required)')
 print('#<output_file> must be the name of the output file that will contain the representative genome of each species cluster. (required)')

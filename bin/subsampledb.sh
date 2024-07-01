@@ -26,7 +26,7 @@ fi
 
 cat << EndOfMessage
 #Script: subsampledb.sh
-#Version: v20240621
+#Version: v20240701
 #Usage: subsampledb.sh <assemblies> <inputdb>
 #<assemblies> must be a text file of versionless assemblies that will be subsampled from inputdb (1/line). (required)
 #<inputdb> must be a local database in FASTA format. (required)
