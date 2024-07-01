@@ -78,8 +78,9 @@ __        ___                   ____         ____  ____      ___
      python doggo_sniff.py -db databases.faa -hmm /hmm_folder -con proj_1 -cut cutoffs.txt -f
      ```
 
-     **Note**: A variation of doggo_sniff.py, called doggo_sniff_fftns.py has been included. It is identical except that it runs multiple alignments with the faster but less accurate FFT-NS-2 algorithm of MAFFT instead of E-INS-i.
-     **Note 2**: HMM profiles and their manuall manually determined cutoffs are included in the hmm/ and cutoffs/ directories respectively, for the GTDB marker sets (bacteria120, archaea53) and 16 contiguous ribosomal proteins (for Bacteria and Archaea).
+   **Note**: A variation of doggo_sniff.py, called doggo_sniff_fftns.py has been included. It is identical except that it runs multiple alignments with the faster but less accurate FFT-NS-2 algorithm of MAFFT instead of E-INS-i.
+   **Note 2**: Since doggo_sniff will combine the individual local databases into one before running the HMM searches, ensure that they are all specified with the -db option.
+   **Note 3**: HMM profiles and their manuall manually determined cutoffs are included in the hmm/ and cutoffs/ directories respectively, for the GTDB marker sets (bacteria120, archaea53) and 16 contiguous ribosomal proteins (for Bacteria and Archaea). For marker sets included, you should specify the corresponding cutoff file, since the default value of 30 is usually too low. 
 
 4. **doggo_zoomies**: `doggo_zoomies.py` will run all the different phylogenetic analyses in IQ-TREE. (TODO: Add a section on the errors that the different analyses address.)
 
@@ -97,7 +98,6 @@ __        ___                   ____         ____  ____      ___
      -AU, --AU (optional): AU will take a user-defined set of leaves and, if they are monophyletic, place them on all possible positions on the tree, optimize branch lengths, and run the Approximately Unbiased test on them versus one or more of the phylogenies run previously. The latter are specified with the same names as their respective options. AU arguments can be MFP, C60, SR4, SR4C60, or D6.
      -AUclade, --AUclade (optional, unless the AU option is provided): AUclade must be a text file with the clade (one leaf name per line) whose position on the phylogeny will be tested.
      -leaves, --leaves (required): LEAVES must be a text file with complete leaf names that will be used to converting them in the phylogenies e.g., an .assembliesnames file. All instances of tab-delimitation will be converted to spaces.
-
      ```
 
    - **Example usage**:
@@ -105,7 +105,7 @@ __        ___                   ____         ____  ____      ___
      python doggo_zoomies.py -i concatenation.faa -MFP -C60 -SR4 -SR4C60 -nex nexus_file.nex -desat -AU -AUclade clade.txt -leaves leaf_names.assembliesnames
      ```
 
-   **Note**: All scripts used by the four modules can be run individually as well. Check the individual scripts for usage information.
+   **Note**: In a future version of the README/manual we will include descriptions with references about the individual analyses in doggo_zoomies and the errors they address in phylogenies.
 
 5. **Auxiliary scripts**: WhereDoGGo? includes a number of auxiliary scripts to facilitate the analyses.
     pickgenomes_dry.py: This script will do a dry run (i.e., no downloads) of checking which genomes would be downloaded by a doggo_fetch run. Use it to determine the parameters of your doggo_fetch run.
@@ -133,6 +133,7 @@ __        ___                   ____         ____  ____      ___
     ```
     Usage: python checkversions.py
     ```
+**Note**: All scripts used by the four modules can be run individually as well. Check the individual scripts for usage information.
 
 ### Dependencies
 
