@@ -18,7 +18,7 @@ import os
 import sys
 
 print('#Script: pickgenomes.py')
-print('#Version: v20240701')
+print('#Version: v20240713')
 print('#Usage: python pickgenomes.py <input_tsv> <tax_level> <tax_resolution> <number> <ignore_list>')
 print('#<input_tsv> must be a tab-delimited file as per GTDB\'s metadata files for Bacteria or Archaea. (required)')
 print('#<tax_level> must be the highest taxonomic level for genomes to be selected as presented in GTDB taxonomy strings e.g. p__Asgardarchaeota (i.e., get genomes from within <tax_level>). (required)')
@@ -146,6 +146,7 @@ with open(sys.argv[1], 'r') as taxa_records:
 
         if x[0] != 'accession': #Ignore the headers line
             score = 1*float(x[2])-5*float(x[3])+1*(float(x[3])*(float(x[10])/100))+0.5*math.log(int(x[47]),10)+0*math.log(int(x[16]),10) #genome quality calculation (identical to dRep)
+            x[0] = x[0][:5] + 'A' + x[0][6:] if x[0][5] == 'F' else x[0]
             if x[0][3:-2] not in ignore_list: ## this is the step where we exclude all the assemblies from the ignore_list
                 acc_score.update( {x[0] : score} ) #key = assembly accession, value = score
                 acc_taxonomy.update( {x[0] : x[19]} ) #key = assembly accession, value = taxonomy

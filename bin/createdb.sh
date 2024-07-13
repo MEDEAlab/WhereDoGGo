@@ -20,7 +20,7 @@ assemblies="$1"
 
 cat << EndOfMessage
 #Script: createdb.sh
-#Version: v20240701
+#Version: v20240713
 #Usage: createdb.sh <assemblies>
 #<assemblies> must be a text file of versionless assemblies (1/line). (required)
 #For more information refer to the comments in the script and/or the Github page.

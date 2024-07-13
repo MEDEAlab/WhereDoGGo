@@ -30,7 +30,7 @@ for nstlobject, link in nonstandardlibraries.items():
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 print('#Script: concatenation.py')
-print('#Version: v20240701')
+print('#Version: v20240713')
 print('#Usage: python concatenation.py <dataset_names> <output_file>')
 print("#<dataset_names> must be a list (one per line) of the files/alignments that will be concatenated. (required)")
 print('#<output_file> must be the name of the output concatenation FASTA file (can contain alphanumeric characters, underscores, and dots). (required)')

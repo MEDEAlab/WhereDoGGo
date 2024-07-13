@@ -28,7 +28,7 @@ fi
 
 cat << EndOfMessage
 #Script: createignore.sh
-#Version: v20240701
+#Version: v20240713
 #Usage: createignore.sh <input_file> <taxon> <domain>
 #<input_file> must be a file with tab-delimited GTDB metadata (original or parsed). (required)
 #<taxon> must be the GTDB taxon for which the ignorelist will be created. (required)

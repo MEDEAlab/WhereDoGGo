@@ -18,7 +18,7 @@ import os
 import sys
 
 print('#Script: pickgenomes_dry.py')
-print('#Version: v20240701')
+print('#Version: v20240713')
 print('#Usage: python pickgenomes_dry.py <input_tsv> <tax_level> <tax_resolution> <number> <ignore_list>')
 print('#<input_tsv> must be a tab-delimited file as per GTDB\'s metadata files for Bacteria or Archaea. (required)')
 print('#<tax_level> must be the highest taxonomic level for genomes to be selected as presented in GTDB taxonomy strings e.g. p__Asgardarchaeota (i.e., get genomes from within <tax_level>). (required)')
@@ -124,20 +124,22 @@ print('Picking genomes.')
 with open(sys.argv[1], 'r') as taxa_records:
     for line in taxa_records:
         x = line.split('\t')
-        y = x[19].split(';')
-        if x[0][3:-2] not in ignore_list and sys.argv[2] in y: ## this is the step where we exclude all the assemblies from the ignore_list
-            if sys.argv[3] == str(y[1])[0]: #if <tax_resolutions> equals the first letter of y element 1 (aka equals "p" for phylum) add it to the resolutions list (will have duplicates).
-                resolutions.append(y[1])
-            elif sys.argv[3] == str(y[2])[0]: #ditto for class
-                resolutions.append(y[2])
-            elif sys.argv[3] == str(y[3])[0]: #ditto for order
-                resolutions.append(y[3])
-            elif sys.argv[3] == str(y[4])[0]: #ditto for family
-                resolutions.append(y[4])
-            elif sys.argv[3] == str(y[5])[0]: #ditto for genus
-                resolutions.append(y[5])
-            elif sys.argv[3] == 'all':
-                all_res_count += 1
+        if x[0] != 'accession': #Ignore the headers line
+            y = x[19].split(';')
+            x[0] = x[0][:5] + 'A' + x[0][6:] if x[0][5] == 'F' else x[0]
+            if x[0][3:-2] not in ignore_list and sys.argv[2] in y: ## this is the step where we exclude all the assemblies from the ignore_list
+                if sys.argv[3] == str(y[1])[0]: #if <tax_resolutions> equals the first letter of y element 1 (aka equals "p" for phylum) add it to the resolutions list (will have duplicates).
+                    resolutions.append(y[1])
+                elif sys.argv[3] == str(y[2])[0]: #ditto for class
+                    resolutions.append(y[2])
+                elif sys.argv[3] == str(y[3])[0]: #ditto for order
+                    resolutions.append(y[3])
+                elif sys.argv[3] == str(y[4])[0]: #ditto for family
+                    resolutions.append(y[4])
+                elif sys.argv[3] == str(y[5])[0]: #ditto for genus
+                    resolutions.append(y[5])
+                elif sys.argv[3] == 'all':
+                    all_res_count += 1
 
 resolution_counts = Counter(resolutions)
 total_genomes_tbd = 0 # total number genomes to be downloaded

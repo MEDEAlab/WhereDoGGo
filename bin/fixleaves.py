@@ -29,7 +29,7 @@ for nstlobject,link in nonstandardlibraries.items():
 from ete3 import Tree
 
 print('#Script: fixleaves.py')
-print('#Version: v20240701')
+print('#Version: v20240713')
 print('#Usage: python fixleaves.py <input_tree> <assembliesnames_file> <output_tree>')
 print('#<input_tree> must be the input phylogenetic tree in Newick format. (required)')
 print('#<input_names> must be a file containing the names of the leaves that will be used for renaming. The current leaf name must be contained in the new names. Tabs as in .assembliesnames are converted to spaces. (required)')

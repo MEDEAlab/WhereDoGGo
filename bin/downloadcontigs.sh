@@ -24,7 +24,7 @@ fi
 
 cat << EndOfMessage
 #Script: downloadcontigs.sh
-#Version: v20240701
+#Version: v20240713
 #Usage: downloadcontigs.sh <assemblies>
 #<assemblies> must be a text file of versionless Genbank assemblies (1/line). RefSeq will be converted to Genbank and version numbers removed. (required)
 #For more information refer to the comments in the script and/or the Github page.

@@ -79,7 +79,7 @@ __        ___                   ____         ____  ____      ___
    \_/\_/  |_| |_|\___|_|  \___|____/ \___/ \____|\____|\___/(_)
                     """)
 
-parser = argparse.ArgumentParser(description="Henlo, am doggo v20240701. Need halp for fetch genomes?")
+parser = argparse.ArgumentParser(description="Henlo, am doggo v20240713. Need halp for fetch genomes?")
 parser.add_argument("-i", "--input", required=True, help="INPUT must be a tab-delimited file as per GTDB\'s metadata files for Bacteria or Archaea. (required)")
 parser.add_argument("-lvl", "--level", required=True, help="LEVEL must be the highest taxonomic level for genomes to be selected as presented in GTDB taxonomy strings e.g., p__Asgardarchaeota (i.e., get genomes from within LEVEL). (required)")
 parser.add_argument("-res", "--resolution", required=True, help="RESOLUTION must be a taxonomic level lower than LEVEL. For each RESOLUTION in LEVEL, NUMBER genomes are picked (or as many as available). Must be p (phylum), c (class), o (order), f (family), g (genus), or all. (required)")
@@ -88,7 +88,7 @@ parser.add_argument("-ig", "--ignore", required=False, help="IGNORE must be a te
 args=parser.parse_args()
 file_stem = (str(args.level)+'_'+str(args.resolution)+'_'+str(args.number))
 
-print('Henlo, am doggo v20240701. I fetch genomes nao. I speak info messages in hooman lingo.' + '\n')
+print('Henlo, am doggo v20240713. I fetch genomes nao. I speak info messages in hooman lingo.' + '\n')
 
 # check for input file
 #TODO: Include formatting check for INPUT and IGNORE.

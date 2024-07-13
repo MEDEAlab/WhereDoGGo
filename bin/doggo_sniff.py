@@ -106,7 +106,7 @@ __        ___                   ____         ____  ____      ___
    \_/\_/  |_| |_|\___|_|  \___|____/ \___/ \____|\____|\___/(_)
                     """)
 
-parser = argparse.ArgumentParser(description="Henlo, am doggo v20240701. Need halp for sniff markers?")
+parser = argparse.ArgumentParser(description="Henlo, am doggo v20240713. Need halp for sniff markers?")
 parser.add_argument("-db", "--databases", nargs='+', required=True, help="DATABASES must be one or more multi-FASTA files (e.g., from the output of doggo_fetch or doggo_herd) against which the hmm searches will be run. (required)")
 parser.add_argument("-hmm", "--hmm", required=True, help="HMM must be a directory containing the .hmm files (HMM profiles) for the markers. (required)")
 parser.add_argument("-con", "--concatenation", required=False, help="CONCATENATION must be the filename stem of the concatenation output containing alphanumeric characters and/or underscores only. If not provided, it will default to five random alphanumeric characters. (optional)")
@@ -115,7 +115,7 @@ parser.add_argument("-f", "--fuse", action='store_true', help="FUSE will run an 
 args=parser.parse_args()
 #TODO: Add possibility for the user to define an output directory.
 
-print('Henlo, am doggo v20240701. I sniff markers nao. I speak info messages in hooman lingo.' + '\n')
+print('Henlo, am doggo v20240713. I sniff markers nao. I speak info messages in hooman lingo.' + '\n')
 
 ## checkpoint for input db file(s)
 for dbmember in args.databases:
