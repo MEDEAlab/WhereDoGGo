@@ -8,25 +8,25 @@
 #Function
 #This script subsamples from a local database a set of genomes (e.g., picked with pickgenomes or from a custom list). Both assemblies found and not found are logged. It's meant mainly as a utility script for subsampling, if one keeps around complete domain-level databases, to save time from running doggo_fetch.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 #NOTE 2: This is the WhereDoGGo? version of the script that assumes input files are correctly formatted, as per the output of doggo_fetch.
 
 #Dependencies
-#1) pullseq (https://github.com/ncbi/datasets)
+#1) seqtk (https://anaconda.org/bioconda/seqtk)
 
 assemblies="$1"
 inputdb="$2"
 
 #Check if all dependencies are installed.
-if ! command -v pullseq &> /dev/null
+if ! command -v seqtk /dev/null
 then
-    echo "Program pullseq not installed. Download it from https://anaconda.org/bioconda/pullseq. Exiting."
+    echo "Program seqtk not installed. Download it from https://anaconda.org/bioconda/seqtk. Exiting."
     exit 1
 fi
 
 cat << EndOfMessage
 #Script: subsampledb.sh
-#Version: v20240713
+#Version: v20241212
 #Usage: subsampledb.sh <assemblies> <inputdb>
 #<assemblies> must be a text file of versionless assemblies that will be subsampled from inputdb (1/line). (required)
 #<inputdb> must be a local database in FASTA format. (required)
@@ -73,7 +73,7 @@ perl -p -i -e 's/>(.*?) (.*?) (.*)/>$2 $1 $3/g' "$inputdb"
 
 #Pull the sequences from inputdb.
 echo "Pulling sequences from the local database."
-pullseq -i "$inputdb" -n "$assemblies" -l 60 >> "$baseassemblies".database
+seqtk subseq "$inputdb" "$assemblies" >> "$baseassemblies".database
 
 #Check which assemblies were subsampled.
 echo "Checking which assemblies were subsampled."

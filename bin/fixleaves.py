@@ -8,7 +8,7 @@
 #Function
 #This script changes the leaf names that correspond to assembly accessions in a Newick tree file, to the corresponding lines in an assembliesnames file (tah-delimited becomes space-delimited).
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #1) ETE3 (https://anaconda.org/etetoolkit/ete3 or https://pypi.org/project/ete3/)
@@ -29,7 +29,7 @@ for nstlobject,link in nonstandardlibraries.items():
 from ete3 import Tree
 
 print('#Script: fixleaves.py')
-print('#Version: v20240713')
+print('#Version: v20241212')
 print('#Usage: python fixleaves.py <input_tree> <assembliesnames_file> <output_tree>')
 print('#<input_tree> must be the input phylogenetic tree in Newick format. (required)')
 print('#<input_names> must be a file containing the names of the leaves that will be used for renaming. The current leaf name must be contained in the new names. Tabs as in .assembliesnames are converted to spaces. (required)')

@@ -8,7 +8,7 @@
 #Function
 #This is the WhereDoGGo? wrapper for creating a local genomic protein sequence database from a set of genome files (contigs).
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #1) Pyrodigal (https://github.com/althonos/pyrodigal)
@@ -73,14 +73,14 @@ __        ___                   ____         ____  ____      ___
    \_/\_/  |_| |_|\___|_|  \___|____/ \___/ \____|\____|\___/(_)
                     """)
 
-parser = argparse.ArgumentParser(description="Henlo, am doggo v20240713. Need halp for local genomes?")
+parser = argparse.ArgumentParser(description="Henlo, am doggo v20241212. Need halp for local genomes?")
 parser.add_argument("-loc", "--location", required=True, help='LOCATION must be a directory containing all genome files. The trailing slash will be added, if not included. (required)')
 parser.add_argument("-ext", "--extension", required=True, help='EXTENSION must be the file extension of the genome files. The leading dot will be added, if not included. (required)')
 parser.add_argument("-prj", "--project", required=False, help='PROJECT must be a project code consisting of alphanumeric characters and/or underscores only. This code will be used as the filename stem of the generated files. If not provided, it will default to five random alphanumeric characters. (optional)')
 parser.add_argument("-code25", "--code25", action='store_true', help="CODE25 must be provided if the local genomes are SR1 or Gracilibacteria (c__JAEDAM01). All ORF predictions will use Genetic Code 25. (optional)")
 args=parser.parse_args()
 
-print('Henlo, am doggo v20240713. I prepare local genomes nao. I speak info messages in hooman lingo.' + '\n')
+print('Henlo, am doggo v20241212. I prepare local genomes nao. I speak info messages in hooman lingo.' + '\n')
 
 # checkpoint for path existence and trailing slash
 if os.path.exists(args.location) == True:
@@ -136,7 +136,7 @@ if os.WEXITSTATUS(os.system(contigs2orfs)) == 1:
     sys.exit(1)
 
 print ('Creating local database.')
-createdb = str('bash ' + createdb_sh + ' ' + args.project + '.assemblies' + ' >> '  + args.project + '.createdblog')
+createdb = str('bash ' + createdb_sh + ' ' + args.project + '.assemblies '  + args.project + '_orfs/ ' + '.faa >> ' + args.project + '.createdblog')
 #os.system(createdb)
 if os.WEXITSTATUS(os.system(createdb)) == 1:
     print('Error during createdb.sh script. Exiting.')

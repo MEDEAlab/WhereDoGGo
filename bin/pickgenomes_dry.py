@@ -18,12 +18,13 @@ import os
 import sys
 
 print('#Script: pickgenomes_dry.py')
-print('#Version: v20240713')
-print('#Usage: python pickgenomes_dry.py <input_tsv> <tax_level> <tax_resolution> <number> <ignore_list>')
+print('#Version: v20241212')
+print('#Usage: python pickgenomes_dry.py <input_tsv> <tax_level> <tax_resolution> <number> <min_genomes> <ignore_list>')
 print('#<input_tsv> must be a tab-delimited file as per GTDB\'s metadata files for Bacteria or Archaea. (required)')
 print('#<tax_level> must be the highest taxonomic level for genomes to be selected as presented in GTDB taxonomy strings e.g. p__Asgardarchaeota (i.e., get genomes from within <tax_level>). (required)')
 print('#<tax_resolution> must be a taxonomic level lower than <tax_level>. For each <tax_resolution> in <tax_level>, the script picks <number> genomes (or as many as available). It must be p (phylum), c (class), o (order), f (family), g (genus), or all. "all" picks all genomes for <tax_level>. (required)')
-print('#<number> must be the number of genomes to be picked per <tax_resolution> or "all". If <tax_resolution> is "all", <number> must also be "all". (required)')
+print('#<number> must be the number of genomes to be picked per <tax_resolution>. It must be a positive integer or "all". If <tax_resolution> is "all", <number> must also be "all". (required)')
+print('#<min_genomes> must be the minimum number of genomes in a <tax_resolution> for these genomes to be picked. It must be a positive integer, lower than or equal to <number>. If number is <all>, it can be any positive integer but it will be overridden. (required)')
 print('#<ignore_list> must be a text file containing genome assembly accessions (once per line, versionless, e.g. GCA_011362025) that should be not included in the pickgenomes process (optional)')
 print('#For more information refer to the comments in the script and/or the Github page.')
 
@@ -32,20 +33,20 @@ ignore_list = list()
 all_res_count = 0
 
 # checkpoint for number of arguments
-if len(sys.argv) == 5 or len(sys.argv) == 6:
+if len(sys.argv) == 6 or len(sys.argv) == 7:
     print(str((len(sys.argv)-1)) + ' arguments found. Proceeding.')
 else:
     print('Wrong number of arguments given. Exiting.')
     sys.exit(1)
 
-file_stem = (str(sys.argv[2]) + '_' + str(sys.argv[3]) + '_' + str(sys.argv[4]))
+file_stem = (str(sys.argv[2]) + '_' + str(sys.argv[3]) + '_' + str(sys.argv[4]) + '_min' + str(sys.argv[5]))
 
 # checkpoint for input file
 check_file = os.path.isfile(sys.argv[1])
 if check_file == True:
     print('Input file found. Proceeding.')
 else:
-    print('Input file not found. Exiting.' + '\n')
+    print('Input file not found. Exiting.')
     sys.exit(1)
 
 #Check if input file is parsed GTDB metadata.
@@ -65,7 +66,7 @@ with open(sys.argv[1], 'r') as file:
     if str(sys.argv[2]+';') in content:
         print('Taxonomic level is valid. Proceeding.')
     else:
-        print('Taxonomic level is invalid. Check spelling. Exiting.' + '\n')
+        print('Taxonomic level is invalid. Check spelling. Exiting.')
         sys.exit(1)
 
 # checkpoint for taxonomic resolution
@@ -75,36 +76,60 @@ if sys.argv[3] in tax_res:
 elif sys.argv[3] == 'all':
     print('Taxonomic resolution is valid (all). Proceeding.')
 else:
-    print('Taxonomic resolution is invalid or missing. Check if it is one of: "p", "c", "o", "f", "g", or "all". Exiting.' + '\n')
+    print('Taxonomic resolution is invalid or missing. Check if it is one of: "p", "c", "o", "f", "g", or "all". Exiting.')
     sys.exit(1)
 
 # checkpoint for resolution and number of genomes both being "all"
 if sys.argv[3] == 'all' and sys.argv[4] != 'all':
-    print('When <tax_resolution> is "all", <number> must also be "all". Exiting.' + '\n')
+    print('When <tax_resolution> is "all", <number> must also be "all". Exiting.')
     sys.exit(1)
 elif sys.argv[3] != 'all' and sys.argv[4] == 'all':
-    print('When <number> is "all", <tax_resolution> must also be "all". Exiting.' + '\n')
+    print('When <number> is "all", <tax_resolution> must also be "all". Exiting.')
     sys.exit(1)
 
 # checkpoint for number of genomes to be picked
-flag = True
+flag1 = True
 try:
     int(sys.argv[4])
 except:
-    flag = False
-if flag and int(sys.argv[4])>0:
+    flag1 = False
+if flag1 and int(sys.argv[4])>0:
     print('Number given is valid. Proceeding.')
 elif sys.argv[4] == 'all':
     print('Number given is valid (all). Proceeding.')
 else:
-    print('Number given is invalid or missing. Number must be a natural number or both <tax_resolution> and <number> must be "all". Exiting.' + '\n')
+    print('Number given is invalid. Exiting.')
     sys.exit(1)
 
-if len(sys.argv) == 6: ## this is to make the ignore_list argument optional
-    check_ignore = os.path.isfile(sys.argv[5])
+# checkpoint for minimum number of genomes in resolution
+flag2 = True
+try:
+    int(sys.argv[5])
+except:
+    flag2 = False
+    print('Minimum number of genomes given is invalid. Exiting.')
+    sys.exit(1)
+if flag2 and int(sys.argv[5])>0:
+    print('Minimum number of genomes given is valid. Proceeding.')
+else:
+    print('Minimum number of genomes given is invalid. Exiting.')
+    sys.exit(1)
+
+# checkpoint for number of genomes being more than minimum number of genomes
+if sys.argv[4] == 'all':
+    print('Number given is all. This will override the minimum number of genomes. Proceeding.')
+elif int(sys.argv[5]) <= int(sys.argv[4]):
+    print('Number is higher than or equal to minimum number of genomes. Proceeding.')
+else:
+    print('Number is lower than minimum number of genomes. Exiting.')
+    sys.exit(1)
+
+#Parsing the assemblies in the ignore_list file. TODO: We don't check for formatting, maybe add?
+if len(sys.argv) == 7: ## this is to make the ignore_list argument optional
+    check_ignore = os.path.isfile(sys.argv[6])
     if check_ignore == True:
         print('Ignore list file found. Proceeding.')
-        with open(sys.argv[5], 'r') as ignore_text:
+        with open(sys.argv[6], 'r') as ignore_text:
             for line in ignore_text:
                 x=line.strip()
                 ignore_list.append(x)
@@ -141,20 +166,24 @@ with open(sys.argv[1], 'r') as taxa_records:
                 elif sys.argv[3] == 'all':
                     all_res_count += 1
 
-resolution_counts = Counter(resolutions)
+resolution_counts = Counter(resolutions) # this is a dictionary {resolution : occurances}
 total_genomes_tbd = 0 # total number genomes to be downloaded
-
+total_genomes_ntbd = 0 # total number of genomes not picked
 with open(file_stem + '.dry', 'w') as outdry:
     if sys.argv[4] == 'all':
         outdry.write("Number of " + sys.argv[2] + " genomes to be downloaded: " + str(all_res_count))
     else:
         for resolution, count in resolution_counts.items(): # resolutions has multiplicates
-            if count <= int(sys.argv[4]):
+            if count <= int(sys.argv[4]) and count >= int(sys.argv[5]):
                 total_genomes_tbd = total_genomes_tbd + count
                 outdry.write(f"Number of {resolution} genomes to be downloaded: {count}" + "\n")
-            else:
+            elif count >= int(sys.argv[4]) and count >= int(sys.argv[5]):
                 total_genomes_tbd = total_genomes_tbd + int(sys.argv[4])
                 outdry.write(f"Number of {resolution} genomes to be downloaded: " + sys.argv[4] + "\n")
-        outdry.write("Total number of genomes to be downloaded: " + str(total_genomes_tbd))
+            else:
+                outdry.write(f"Number of {resolution} genomes not picked: {count}" + "\n") # if number of genomes < min number
+                total_genomes_ntbd = total_genomes_ntbd + count
+        outdry.write("Total number of genomes to be downloaded: " + str(total_genomes_tbd) + "\n")
+        outdry.write("Total number of genomes not picked: " + str(total_genomes_ntbd))
 
 print('All done!')

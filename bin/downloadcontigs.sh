@@ -8,7 +8,7 @@
 #Function
 #This script will download contigs (each genome's latest version) from Genbank for a list of assemblies. It is essentially a wrapper for ncbi-datasets-cli with small extra features (e.g., an extra failed/non-genome download check).
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #1) ncbi-datasets-cli (https://github.com/ncbi/datasets)
@@ -24,7 +24,7 @@ fi
 
 cat << EndOfMessage
 #Script: downloadcontigs.sh
-#Version: v20240713
+#Version: v20241212
 #Usage: downloadcontigs.sh <assemblies>
 #<assemblies> must be a text file of versionless Genbank assemblies (1/line). RefSeq will be converted to Genbank and version numbers removed. (required)
 #For more information refer to the comments in the script and/or the Github page.
@@ -89,16 +89,16 @@ declare -i corruptedcheck
 corruptedcheck=0
 
 #If the .retry file is not empty, we enter a loop of retrying the downloads of any corrupted genomes until there are none left.
-if [ "$(wc -l < "$baseassemblies".retry)" -gt 0 ]
+if [ "$(wc -l < "$baseassemblies".retry | sed 's/ //g')" -gt 0 ]
 then
 	#Check the value of the corruptedcheck variable.
 	while [ "$corruptedcheck" -eq 0 ] ; do
 		#Check how many lines the .retry file contains, to pass a grammatically correct message.
-		if [ "$(wc -l < "$baseassemblies".retry)" -eq 1 ]
+		if [ "$(wc -l < "$baseassemblies".retry | sed 's/ //g')" -eq 1 ]
 		then
 			echo "One corrupted genome file detected in the previous download. Retrying for that genome."
 		else
-			echo ""$(wc -l < "$baseassemblies".retry)" corrupted genome files detected in the previous download. Retrying for these genomes."
+			echo ""$(wc -l < "$baseassemblies".retry | sed 's/ //g')" corrupted genome files detected in the previous download. Retrying for these genomes."
 		fi
 		#Remove the corrupted files to avoid conflicts with the new download.
 		echo "Removing corrupted genome files."
@@ -110,7 +110,7 @@ then
 		unzip -q -j -d "$baseassemblies"_contigs/ ncbi_dataset.zip '*.fna' 2>&1 >/dev/null | grep 'invalid compressed data to inflate' | perl -p -e 's/^.*?_contigs\/(GCA_\d+?)\..*/$1/g' > "$baseassemblies".retry
 		rm ncbi_dataset.zip
 		#If the retry file is now empty, change the value of corruptedcheck to break the loop.
-		if [ "$(wc -l < "$baseassemblies".retry)" -eq 0 ]
+		if [ "$(wc -l < "$baseassemblies".retry | sed 's/ //g')" -eq 0 ]
 		then
 			corruptedcheck=1
 			echo "No corrupted genome files detected in the previous download. Proceeding."
@@ -134,7 +134,7 @@ for i in "$baseassemblies"_contigs/*.fna ; do mv "$i" "$baseassemblies"_contigs/
 echo "Removing failed or non-genome downloads and writing assemblies to the .failed file."
 touch "$baseassemblies".failed
 for i in "$baseassemblies"_contigs/*.fna ; do
-	if [ $(wc -c < $i) -lt 10 ] ; then
+	if [ $(wc -c < $i | sed 's/ //g') -lt 10 ] ; then
 		echo "$(basename "$i" .fna)" >> "$baseassemblies".failed
 		rm "$i"
 	fi
@@ -144,7 +144,7 @@ done
 declare -i dlwarn
 dlwarn=0
 while IFS= read -r line; do
-	if [ "$(ls "$baseassemblies"_contigs/"$line".fna | wc -l)" -eq 0 ] ; then
+	if [ "$(ls "$baseassemblies"_contigs/"$line".fna | wc -l | sed 's/ //g')" -eq 0 ] ; then
     echo "$line" >> "$baseassemblies".failed
 		dlwarn=5
 	fi

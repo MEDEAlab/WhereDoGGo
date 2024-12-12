@@ -8,7 +8,7 @@
 #Function
 #This script concatenates sequences from a set of fasta files (input as a list) into a new concatenation fasta.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #1) Biopython (https://biopython.org/wiki/Download or https://anaconda.org/conda-forge/biopython)
@@ -30,9 +30,10 @@ for nstlobject, link in nonstandardlibraries.items():
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 print('#Script: concatenation.py')
-print('#Version: v20240713')
-print('#Usage: python concatenation.py <dataset_names> <output_file>')
-print("#<dataset_names> must be a list (one per line) of the files/alignments that will be concatenated. (required)")
+print('#Version: v20241212')
+print('#Usage: python concatenation.py <datasets> <dataset_names> <output_file>')
+print('#<datasets> must be the directory containing the files/alignments that will be concatenated. (trailing slash optional) (required)')
+print("#<dataset_names> must be a list (one per line) of the names (without path) of the files/alignments that will be concatenated. (required)")
 print('#<output_file> must be the name of the output concatenation FASTA file (can contain alphanumeric characters, underscores, and dots). (required)')
 print('#For more information refer to the comments in the script and/or the Github page.')
 
@@ -40,30 +41,42 @@ print('#For more information refer to the comments in the script and/or the Gith
 headers_accessions = []
 
 #Checkpoint for number of arguments
-if len(sys.argv) == 3:
-    print ('Two arguments found. Proceeding.')
+if len(sys.argv) == 4:
+    print ('Three arguments found. Proceeding.')
 else:
     print('Wrong number of arguments given. Exiting.')
     sys.exit(1)
 
+#Checkpoint for datasets directory existence and trailing slash. Convert to abspath to create the full path for each file in dataset_names and to make sure there are no issues when called through doggo_sniff.
+if os.path.exists(sys.argv[1]) == True:
+    print ('Datasets directory found. Proceeding.')
+    datasetsdir = os.path.abspath(sys.argv[1])
+    datasetsdir = os.path.join(datasetsdir, '')
+else:
+    print ('Datasets directory not found. Exiting.')
+    sys.exit(1)
+
 #Checkpoint for the existence of the dataset_names file
-if os.path.isfile(sys.argv[1]) == True:
+if os.path.isfile(sys.argv[2]) == True:
     print('Dataset names file found. Proceeding.')
 else:
     print('Dataset names file not found. Exiting.')
     sys.exit(1)
 
-#Checkpoint for disallowed characters in output file name.
+#Checkpoint for disallowed characters in output file name. We have to isolate the filename from the preceding path.
 #TODO: Maybe remove this character requirement in the output filename? It's not adding anything nor will it prevent doggo_zoomies or iqtree from running. Otherwise remove dots as an allowed character and automatically use .concatenation as the extension.
-if re.match(r'^[A-Za-z0-9_\.]+$', sys.argv[2]):
+outfilename = str(os.path.basename(sys.argv[3]))
+if re.match(r'^[A-Za-z0-9_\.]+$', outfilename):
     print ('Concatenation name is valid. Proceeding.')
 else:
     print ('Concatenation name is invalid. Exiting.')
     sys.exit(1)
 
 #Checkpoint for the existence of the files in the dataset list.
-with open(sys.argv[1]) as f:
-	datasets = [line.rstrip() for line in f]
+with open(sys.argv[2]) as f:
+    datasets = [line.rstrip() for line in f]
+# Update datasets to include full paths
+datasets = [os.path.join(datasetsdir, filename) for filename in datasets]
 for filename in datasets:
     if not os.path.isfile(filename):
         print('Dataset ' + filename + ' not found. Exiting.')
@@ -72,7 +85,7 @@ print('All dataset files found. Proceeding.')
 
 #Remove any previous output files with the same name.
 print ('Removing files with names identical to the output.')
-removal = ('rm -r ' + sys.argv[2] + ' 2> /dev/null')
+removal = ('rm -r ' + sys.argv[3] + ' 2> /dev/null')
 os.system(removal)
 
 #Open list with filenames to be concatenated.
@@ -81,7 +94,7 @@ os.system(removal)
 print('Extracting sequence accessions.')
 filedata = {filename: open(filename, 'r') for filename in datasets}
 #Second argument is concatenation output file.
-concat_out = open(sys.argv[2], 'a')
+concat_out = open(sys.argv[3], 'a')
 #Create a list with all the different accessions.
 for file in filedata.values():
     #For each sequence in each dataset, if the assembly is not in list of unique accessions, add it.

@@ -8,7 +8,7 @@
 #Function
 #This is the WhereDoGGo? wrapper for picking a set of genomes, downloading them from Genbank as contigs, and creating a local genomic database of protein sequences.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #1) ncbi-datasets-cli (https://github.com/ncbi/datasets)
@@ -79,16 +79,16 @@ __        ___                   ____         ____  ____      ___
    \_/\_/  |_| |_|\___|_|  \___|____/ \___/ \____|\____|\___/(_)
                     """)
 
-parser = argparse.ArgumentParser(description="Henlo, am doggo v20240713. Need halp for fetch genomes?")
+parser = argparse.ArgumentParser(description="Henlo, am doggo v20241212. Need halp for fetch genomes?")
 parser.add_argument("-i", "--input", required=True, help="INPUT must be a tab-delimited file as per GTDB\'s metadata files for Bacteria or Archaea. (required)")
 parser.add_argument("-lvl", "--level", required=True, help="LEVEL must be the highest taxonomic level for genomes to be selected as presented in GTDB taxonomy strings e.g., p__Asgardarchaeota (i.e., get genomes from within LEVEL). (required)")
 parser.add_argument("-res", "--resolution", required=True, help="RESOLUTION must be a taxonomic level lower than LEVEL. For each RESOLUTION in LEVEL, NUMBER genomes are picked (or as many as available). Must be p (phylum), c (class), o (order), f (family), g (genus), or all. (required)")
 parser.add_argument("-n", "--number", required=True, help="NUMBER must be the number of genomes to be picked per RESOLUTION. Must be a positive integer or all. If RESOLUTION is all, NUMBER must also be all. (required)")
-parser.add_argument("-ig", "--ignore", required=False, help="IGNORE must be a text file containing genome assembly accessions (one per line, versionless e.g., GCA_011362025) that will not bepicked. (optional)")
+parser.add_argument("-min", "--minimum", required=True, help="MINIMUM must be the minimum number of genomes for a RESOLUTION to be included. Must be a positive integer and lower than or equal to NUMBER. If NUMBER is all, MINIMUM can be any positive integer but it will be overridden. (required)")
+parser.add_argument("-ig", "--ignore", required=False, help="IGNORE must be a text file containing genome assembly accessions (one per line, versionless e.g., GCA_011362025) that will not be picked. (optional)")
 args=parser.parse_args()
-file_stem = (str(args.level)+'_'+str(args.resolution)+'_'+str(args.number))
-
-print('Henlo, am doggo v20240713. I fetch genomes nao. I speak info messages in hooman lingo.' + '\n')
+file_stem = (str(args.level)+'_'+str(args.resolution)+'_'+str(args.number)+'_min'+str(args.minimum))
+print('Henlo, am doggo v20241212. I fetch genomes nao. I speak info messages in hooman lingo.' + '\n')
 
 # check for input file
 #TODO: Include formatting check for INPUT and IGNORE.
@@ -146,6 +146,30 @@ else:
     sys.exit(1)
 args.number=str(args.number)
 
+# check for minimum number of genomes per resolution
+try:
+    args.minimum=int(args.minimum)
+except:
+    print('Minimum number of genomes given is invalid. Exiting.')
+    sys.exit(1)
+if int(args.minimum)>0:
+    print('Minimum number of genomes given is valid. Proceeding.')
+else:
+    print('Minimum number of genomes given is invalid. Exiting.')
+    sys.exit(1)
+args.minimum=str(args.minimum)
+
+# check for number of genomes to be picked being more more than the minimum number of genomes per resolution
+if args.number == 'all':
+    print('Number given is all. This will override the minimum number of genomes. Proceeding.')
+elif int(args.minimum) <= int(args.number):
+    print('Number is higher than or equal to minimum number of genomes. Proceeding.')
+else:
+    print('Number must be higher than or equal to minimum number of genomes. Exiting.')
+    sys.exit(1)
+args.number=str(args.number)
+args.minimum=str(args.minimum)
+
 # check for ignore_list argument
 if args.ignore is not None:
     #check_ignore = os.path.isfile(path+'/'+args.ignore)
@@ -159,7 +183,7 @@ else:
 
 #Remove any previous output files with the same name.
 print ('Removing files and directories with names identical to the output.')
-removal = str('rm -r ' + file_stem + '.assemblies ' + file_stem + '.assembliesnames ' + file_stem + '.pickgenomeslog ' + file_stem + '.downloadcontigslog ' + file_stem + '.failed ' + file_stem + '.contigs2orfslog ' + file_stem + '.pyrodigallog ' + file_stem + '.createdblog ' + file_stem + '.database ' + file_stem + '_contigs.tar.gz ' + file_stem + '_orfs.tar.gz ' + file_stem + '_contigs/ ' + file_stem + '_orfs/ ' + file_stem + '_fetch/ 2> /dev/null')
+removal = str('rm -r ' + file_stem + '.assemblies ' + file_stem + '.assembliesnames '  + file_stem + '.belowmin ' + file_stem + '.belowminnames ' + file_stem + '.pickgenomeslog ' + file_stem + '.downloadcontigslog ' + file_stem + '.failed ' + file_stem + '.contigs2orfslog ' + file_stem + '.pyrodigallog ' + file_stem + '.createdblog ' + file_stem + '.database ' + file_stem + '_contigs.tar.gz ' + file_stem + '_orfs.tar.gz ' + file_stem + '_contigs/ ' + file_stem + '_orfs/ ' + file_stem + '_fetch/ 2> /dev/null')
 os.system(removal)
 
 # this is for defining the domain of the taxonomic level chosen by the user
@@ -176,14 +200,14 @@ with open(args.input, 'r') as f:
                 break
 
 print ('Picking genomes.')
-if len(sys.argv) == 11:
-    pickgenomes = str('python -u ' + pickgenomes_py + ' ' + args.input + ' ' + args.level + ' ' + args.resolution + ' ' + args.number + ' ' + args.ignore + ' >> ' + file_stem + '.pickgenomeslog')
+if len(sys.argv) == 13:
+    pickgenomes = str('python -u ' + pickgenomes_py + ' ' + args.input + ' ' + args.level + ' ' + args.resolution + ' ' + args.number + ' ' + args.minimum + ' ' + args.ignore + ' >> ' + file_stem + '.pickgenomeslog')
     #os.system(pickgenomes)
     if os.WEXITSTATUS(os.system(pickgenomes)) == 1:
         print('Error during pickgenomes.py script. Exiting.')
         sys.exit(1)
 else:
-    pickgenomes = str('python -u ' + pickgenomes_py + ' ' + args.input + ' ' + args.level + ' ' + args.resolution + ' ' + args.number+ ' >> ' + file_stem + '.pickgenomeslog')
+    pickgenomes = str('python -u ' + pickgenomes_py + ' ' + args.input + ' ' + args.level + ' ' + args.resolution + ' ' + args.number + ' ' + args.minimum + ' >> ' + file_stem + '.pickgenomeslog')
     #os.system(pickgenomes)
     if os.WEXITSTATUS(os.system(pickgenomes)) == 1:
         print('Error during pickgenomes.py script. Exiting.')
@@ -204,7 +228,7 @@ if os.WEXITSTATUS(os.system(contigs2orfs)) == 1:
     sys.exit(1)
 
 print ('Creating local database.')
-createdb = str('bash ' + createdb_sh + ' ' + file_stem + '.assemblies >> ' + file_stem + '.createdblog')
+createdb = str('bash ' + createdb_sh + ' ' + file_stem + '.assemblies '  + file_stem + '_orfs/ ' + '.faa >> ' + file_stem + '.createdblog')
 #os.system(createdb)
 if os.WEXITSTATUS(os.system(createdb)) == 1:
     print('Error during createdb.sh script. Exiting.')
@@ -217,7 +241,7 @@ if os.WEXITSTATUS(os.system(compressdirs)) == 1:
     sys.exit(1)
 
 print ('Creating run directory.')
-backup = str('mkdir ' + file_stem + '_fetch && mv -i ' + file_stem + '.assemblies ' + file_stem + '.assembliesnames ' + file_stem + '.pickgenomeslog ' + file_stem + '.downloadcontigslog ' + file_stem + '.failed ' + file_stem + '.contigs2orfslog ' + file_stem + '.pyrodigallog ' + file_stem + '.createdblog ' + file_stem + '.database ' + file_stem + '_contigs.tar.gz ' + file_stem + '_orfs.tar.gz ' + file_stem + '_fetch/' )
+backup = str('mkdir ' + file_stem + '_fetch && mv -i ' + file_stem + '.assemblies ' + file_stem + '.assembliesnames ' + file_stem + '.belowmin ' + file_stem + '.belowminnames ' + file_stem + '.pickgenomeslog ' + file_stem + '.downloadcontigslog ' + file_stem + '.failed ' + file_stem + '.contigs2orfslog ' + file_stem + '.pyrodigallog ' + file_stem + '.createdblog ' + file_stem + '.database ' + file_stem + '_contigs.tar.gz ' + file_stem + '_orfs.tar.gz ' + file_stem + '_fetch/' )
 if os.WEXITSTATUS(os.system(backup)) == 1:
     print('Error when creating run directory. Exiting.')
     sys.exit(1)

@@ -8,7 +8,7 @@
 #Function
 #This script recodes sequences in amino acid fasta files to different reduced amino acid alphabets.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 #NOTE 2: We chose to do all recoding to numbers, which works for IQ-TREE, even the 4-state alphabets.
 
 #Dependencies
@@ -18,7 +18,7 @@ import os
 import sys
 
 print('#Script: aarecode.py')
-print('#Version: v20240713')
+print('#Version: v20241212')
 print('#Usage: python aarecode.py <input_faa> <output_faa> <alphabet>')
 print('#<input_faa> must be the input protein FASTA file using the complete 20-state amino-acid alphabet. Unknown states are assumed to be X. (required)')
 print('#<output_faa> must be the name of the output recoded FASTA file. (required)')

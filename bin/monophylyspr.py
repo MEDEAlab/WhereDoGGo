@@ -8,7 +8,7 @@
 #Function
 #This script checks if leaves from a given list are monophyletic in a phylogoeny. If they are, the branch is pruned and regradted to all possible positions in the phylogeny.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #1) ETE3 (https://anaconda.org/etetoolkit/ete3 or https://pypi.org/project/ete3/)
@@ -29,7 +29,7 @@ for nstlobject,link in nonstandardlibraries.items():
 from ete3 import Tree
 
 print('#Script: monophylyspr.py')
-print('#Version: v20240713')
+print('#Version: v20241212')
 print('#Usage: python monophylyspr.py <input_tree> <cluster>')
 print('#<input_tree> must be the input phylogenetic tree in Newick format. Branch supports need to be single values. (required)')
 print('#<cluster> must be a text file containing leaf names (one per line). These leaves are checked if they are monophyletic in <input_tree>. If they are, their branch is pruned and regrafted in all possible positions on the tree. (required)')

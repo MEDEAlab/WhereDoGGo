@@ -9,7 +9,7 @@
 #This script will create assemblies (list of assemblies) and assmebliesnames (assemblies and species names, tab-delimited) files for a local set of genome files (as contigs).
 #Since these genomes did not originate from NCBI, we have to create dummy assemblies and species names.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #NONE
@@ -20,7 +20,7 @@ code="$3"
 
 cat << EndOfMessage
 #Script: createrecords.sh
-#Version: v20240713
+#Version: v20241212
 #Usage: createrecords.sh <contigs> <filext> <code>
 #<contigs> must be the path to the directory containing the genome files (as contigs). (trailing slash optional) (required)
 #<filext> must be the file extension of the genome files. (leading dot optional) (required)
@@ -59,7 +59,7 @@ then
 fi
 
 #Check if there exists at least one file with the chosen extension in the genome directory, otherwise exit.
-if [ $(find "$contigs" -mindepth 1 -maxdepth 1 -name "*$filext" | wc -l) -gt 0 ]; then
+if [ $(find "$contigs" -mindepth 1 -maxdepth 1 -name "*$filext" | wc -l | sed 's/ //g') -gt 0 ]; then
   echo "File(s) with the given extension found in the contig directory. Proceeding."
 else
   echo "No files with given extension found in the contig directory. Exiting."

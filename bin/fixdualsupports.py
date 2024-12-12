@@ -8,7 +8,7 @@
 #Function
 #This script checks amino acid sequences in a fasta file, converting lowercase to uppercase and converting non-standard amino acids and other symbols to "X" for unknown state, to avoid weird behavior by other programs.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #NONE
@@ -18,7 +18,7 @@ import re
 import sys
 
 print('#Script: fixdualsupports.py')
-print('#Version: v20240713')
+print('#Version: v20241212')
 print('#Usage: python fixdualsupports.py <input_tree> <output_tree>')
 print('#<input_tree> must be the input phylogenetic tree in Newick format, with two slash-separated support values of which the first must be ultrafast bootstraps and the second aLRT-SH. (required)')
 print('#<output_tree> must be the name of the output Newick tree file. Strongly supported branches (UFBOOT>=95 & aLRT-SH>=0.80) are assigned a value of 1 and weakly supported branches are assigned a value of 0. (required)')

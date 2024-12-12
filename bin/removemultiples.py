@@ -8,7 +8,7 @@
 #Function
 #This script removes all sequences with the same accession number from a fasta file, outputting the rest in a new fasta, and noting the accessions removed and number of multiplicates in a log.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 #NOTE 2: This is the WhereDoGGo? version of the script that works on all files in the working directory with a given extension.
 
 #Dependencies
@@ -30,53 +30,65 @@ for nstlobject,link in nonstandardlibraries.items():
 from Bio import SeqIO
 
 print('#Script: removemultiples.py')
-print('#Version: v20240713')
-print('#Usage: python removemultiples.py <input_ext> <output_ext> <output_log>')
-print("#<input_ext> must be the extension of the FASTA files in the working directory that will be checked for sequences with the same accession. The stem of each file is retained for the output and log files. (leading dot optional) (required)")
-print('#<output_ext> must be the extension of the FASTA files where the sequences without multiples will be written. (leading dot optional) (required)')
+print('#Version: v20241212')
+print('#Usage: python removemultiples.py <datasets> <input_ext> <output_ext> <output_log>')
+print('#<datasets> must be the directory containing the FASTA files with <input_ext>. (trailing slash optional) (required)')
+print("#<input_ext> must be the extension of the FASTA files in <datasets> that will be checked for sequences with the same accession. The stem of each file is retained for the output and log files. (leading dot optional) (required)")
+print('#<output_ext> must be the extension of the created FASTA files where the sequences without multiples will be written. (leading dot optional) (required)')
 print('#<output_log> must be the name of the tab-delimited log file that will contain the accessions with multiples and the number of times each was found. (required)')
 print('#For more information refer to the comments in the script and/or the Github page.')
 
 #Checkpoint for number of arguments
-if len(sys.argv) == 4:
-    print ('Three arguments found. Proceeding.')
+if len(sys.argv) == 5:
+    print ('Four arguments found. Proceeding.')
 else:
     print('Wrong number of arguments given. Exiting.')
     sys.exit(1)
 
 #Check if the extensions start with a dot, otherwise add them.
-input_ext = sys.argv[1]
-output_ext = sys.argv[2]
+input_ext = sys.argv[2]
+output_ext = sys.argv[3]
 if input_ext.startswith('.') == False: #This is not absolutely necessary, since os.path.splitext will detect the extension anyway. It's more of a precaution against double dots.
     input_ext = str('.' + input_ext)
 if output_ext.startswith('.') == False:
     output_ext = str('.' + output_ext)
 
-#Check if files with a given extension exist in the working directory and create a list of them.
+#Checkpoint for datasets directory existence and trailing slash. Convert to abspath to make sure there are no issues when called through doggo_sniff.
+if os.path.exists(sys.argv[1]) == True:
+    print ('Datasets directory found. Proceeding.')
+    datasetsdir = os.path.abspath(sys.argv[1])
+    datasetsdir = os.path.join(datasetsdir, '')
+else:
+    print ('Datasets directory not found. Exiting.')
+    sys.exit(1)
+
+#Check if files with a given extension exist in the datasets directory and create a list of them.
 filenames = []
-for fname in os.listdir('.'):
+for fname in os.listdir(datasetsdir):
     if fname.endswith(input_ext):
+        fname = os.path.join(datasetsdir, fname)
         filenames.append(fname)
 if len(filenames) > 0:
-    print('File(s) with the input extension found in the working directory. Proceeding.')
+    print('File(s) with the input extension found in the datasets directory. Proceeding.')
 else:
-    print('No files with the input extension found in the working directory. Exiting.')
+    print('No files with the input extension found in the datasets directory. Exiting.')
     sys.exit(1)
 
 #Remove any previous output files with the same name.
 print ('Removing files with names identical to the output.')
-removal = ('rm -r *' + output_ext + ' ' + sys.argv[3] + ' 2> /dev/null')
+removal = ('rm -r *' + output_ext + ' ' + sys.argv[4] + ' 2> /dev/null')
 os.system(removal)
 
 print ('Writing log and output files.')
-output_log = open(sys.argv[3], "w")
+output_log = open(sys.argv[4], "w")
 for fname2 in filenames:
     #Separate the fasta file stem to use for the output and log files.
-    filestem = os.path.splitext(fname2)[0]
+    filestem = str(os.path.basename(fname2).split(os.extsep, 1)[0])
+    filestemplusinputext = str(os.path.basename(fname2))
     #Create an empty accessions list and an empty removals list. Populate the accessions list with all accessions in the current fasta file.
     accessions = []
     removals = []
-    output_log.write(fname2 + '\n')
+    output_log.write(filestemplusinputext + '\n')
     for acc in SeqIO.parse(fname2, 'fasta'):
         accessions.append(acc.id)
     #For each accession, if it appears more than once, add it to the removals set. This will also remove the multiplicates from the list.

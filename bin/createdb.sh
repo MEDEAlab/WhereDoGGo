@@ -8,30 +8,32 @@
 #Function
 #This script will cat orfs produced by contigs2orfs into a single database against which we can then run homology searches.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
-#NOTE 2: This is the WhereDoGGo? version of the script that assumes that a properly named directory containing the orf faa files is present in the working directory (normally created by contigs2orfs.sh).
-#All faa files in the orfs directory are included in the db indiscriminately.
+#NOTE 1: All code was written and tested on or ARM Intel macOS and Ubuntu. Please report any issues.
+#All files in the orfs directory with a given extension are included in the db indiscriminately.
 #TODO: Have the script run off a list of assemblies instead (to use subsets of the genomes)?
 
 #Dependencies
 #NONE
 
 assemblies="$1"
+orfs="$2"
+filext="$3"
 
 cat << EndOfMessage
 #Script: createdb.sh
-#Version: v20240713
-#Usage: createdb.sh <assemblies>
+#Version: v20241212
+#Usage: createdb.sh <assemblies> <orfs> <filext>
 #<assemblies> must be a text file of versionless assemblies (1/line). (required)
+#<orfs> must be the path to the directory containing the genome files (as orfs). (trailing slash optional) (required)
+#<filext> must be the extension of the genome files. (leading dot optional) (required)
 #For more information refer to the comments in the script and/or the Github page.
 EndOfMessage
 #We don't really care about the contents of the assemblies file here, just its filename stem for finding the orf directory. Thus, there are no checks for proper formatting of the assembly list.
-#TODO: Include an option for picking which directory contains the orf files (and maybe even their file extension).
 
 #Check if the number of arguments is correct, otherwise exit.
-if [ "$#" -eq 1 ]
+if [ "$#" -eq 3 ]
 then
-	echo "One argument found. Proceeding."
+	echo "Three arguments found. Proceeding."
 else
 	echo "Wrong number of arguments given. Exiting."
 	exit 1
@@ -50,12 +52,33 @@ fi
 baseassemblies="$(basename "$assemblies" | perl -p -e 's/^(.*?)\..*/$1/g')"
 
 #Check if the orfs directory exists, otherwise exit.
-if [ -d "$baseassemblies"_orfs ]
+if [ -d $orfs ]
 then
 	echo "ORF directory found. Proceeding."
 else
-	echo "ORF directory not found in the working directory. Exiting."
+	echo "ORF directory not found. Exiting."
 	exit 1
+fi
+
+#Check if the user provided a path ending with a slash ("/"), otherwise add it. This relates to finding files later.
+if [[ $orfs != *\/ ]]
+then
+	orfs="${orfs}/"
+fi
+
+#Check if the extension provided starts with a dot, otherwise add it. This relates to finding files later.
+if [[ $filext != \.* ]]
+then
+	filext=".${filext}"
+fi
+
+#Check if there exists at least one file with the chosen extension in the orfs directory, otherwise exit.
+#If this find command is run without $orfs assigned, it will fail (without the quotes it will default to current directory). If $filext is not assigned it will find everything (because it defaults to an asterisk).
+if [ $(find "$orfs" -mindepth 1 -maxdepth 1 -name "*$filext" | wc -l | sed 's/ //g') -gt 0 ]; then
+  echo "File(s) with the given extension found in the ORF directory. Proceeding."
+else
+  echo "No files with given extension found in the ORF directory. Exiting."
+  exit 1
 fi
 
 #Remove the output from any previous runs to avoid appending.
@@ -64,7 +87,7 @@ rm -r "$baseassemblies".database 2> /dev/null
 
 #Cat all the orf files together.
 echo "Creating local database."
-for i in "$baseassemblies"_orfs/*.faa ; do cat "$i" >> "$baseassemblies".database ; done
+for i in "${orfs}"*"${filext}" ; do cat "$i" >> "$baseassemblies".database ; done
 
 #Congrats, you're done!
 echo "All done!"

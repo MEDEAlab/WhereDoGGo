@@ -6,7 +6,9 @@
 #THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #Function
-#This script will take the metadata for Bacteria or Archaea as input and parse it to isolate the representative genome of each species cluster.
+#This script will parse a file containing GTDB metadata and output only the lines containing the representative genome for each species cluster.
+
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #NONE
@@ -15,7 +17,7 @@ import os
 import sys
 
 print('#Script: parsemetadata.py')
-print('#Version: v20240713')
+print('#Version: v20241212')
 print('#Usage: python parsemetadata.py <input_file> <output_file>')
 print('#<input_file> must be tab-delimited GTDB metadata. (required)')
 print('#<output_file> must be the name of the output file that will contain the representative genome of each species cluster. (required)')

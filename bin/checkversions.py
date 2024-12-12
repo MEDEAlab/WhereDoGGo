@@ -8,6 +8,8 @@
 #Function
 #This checks the version of all WhereDoGGo? dependencies.
 
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
+
 #Dependencies
 #1) Biopython (https://biopython.org/wiki/Download or https://anaconda.org/conda-forge/biopython)
 #2) pandas (https://github.com/pandas-dev/pandas)
@@ -16,7 +18,7 @@
 #5) ncbi-datasets-cli (https://github.com/ncbi/datasets)
 #6) Pyrodigal (https://github.com/althonos/pyrodigal)
 #7) HMMER (https://anaconda.org/bioconda/hmmer)
-#8) Pullseq (https://anaconda.org/bioconda/pullseq)
+#8) seqtk (https://anaconda.org/bioconda/seqtk)
 #9) MAFFT (https://anaconda.org/bioconda/mafft)
 #10) BMGE (https://anaconda.org/bioconda/bmge)
 #11) IQ-TREE 2 (v2.2 or higher) (https://anaconda.org/bioconda/iqtree)
@@ -45,7 +47,7 @@ import subprocess
 externalprograms = {"datasets":"https://github.com/ncbi/datasets",
                     "pyrodigal": "https://github.com/althonos/pyrodigal",
                     "hmmsearch": "https://anaconda.org/bioconda/hmmer",
-                    "pullseq": "https://anaconda.org/bioconda/pullseq",
+                    "seqtk": "https://anaconda.org/bioconda/seqtk",
                     "einsi": "https://anaconda.org/bioconda/mafft",
                     "bmge": "https://anaconda.org/bioconda/bmge",
                     "iqtree2" : "https://anaconda.org/bioconda/iqtree"}
@@ -57,7 +59,7 @@ for extprg,link in externalprograms.items():
         sys.exit(1)
 
 print('#Script: checkversions.py')
-print('#Version: v20240713')
+print('#Version: v20241212')
 print('#Usage: python checkversions.py')
 print('#For more information refer to the comments in the script and/or the Github page.')
 
@@ -84,8 +86,8 @@ print(pyrodigal_check)
 hmmsearch_check = (subprocess.check_output("hmmsearch -h | grep \"# HMMER\" | perl -p -e \'s/^.*? HMMER (.*?) .*/$1/\'", shell=True, universal_newlines=True).strip())
 print('hmmsearch ' + hmmsearch_check)
 
-pullseq_check = (subprocess.check_output("pullseq -i goat --version 2> /dev/null | perl -p -e \'s/^Version is (.*)/$1/\'", shell=True, universal_newlines=True).strip())
-print('pullseq ' + pullseq_check)
+seqtk_check = (subprocess.check_output("seqtk 2>&1 >/dev/null | grep \"Version\" | perl -p -e \'s/^Version\\: (.*)/$1/g\'", shell=True, universal_newlines=True).strip())
+print('seqtk ' + seqtk_check)
 
 einsi_check = (subprocess.check_output("einsi --version 2>&1 >/dev/null | perl -p -e \'s/^v(.*?) .*/$1/\'", shell=True, universal_newlines=True).strip())
 print('einsi ' + einsi_check)
@@ -96,6 +98,6 @@ print('bmge ' + bmge_check)
 iqtree2_check = (subprocess.check_output("iqtree2 --version | grep \"IQ-TREE \" | perl -p -e \'s/^IQ-TREE .*? version (.*?) .*/$1/\'", shell=True, universal_newlines=True).strip())
 print('iqtree2 ' + iqtree2_check)
 
-print ('WhereDoGGo? modules each use the following dependencies: fetch (datasets, pyrodigal), herd (pyrodigal), sniff (biopython, hmmsearch, pullseq, einsi, bmge), zoomies (biopython, ete3, numpy, pandas, iqtree2).')
+print ('WhereDoGGo? modules each use the following dependencies: fetch (datasets, pyrodigal), herd (pyrodigal), sniff (biopython, hmmsearch, seqtk, einsi, bmge), zoomies (biopython, ete3, numpy, pandas, iqtree2).')
 
 print('All done!')

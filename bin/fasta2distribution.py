@@ -8,7 +8,7 @@
 #Function
 #This script outputs a tab-delimited file with the taxonomic distribution of sequences in each FASTA file with a given extension (assembly accession, name, tab-delimited sequence accessions), based on a tab-delimited assembliesnames file.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 #NOTE 2: This is the WhereDoGGo? version of the script that works on all files in the working directory with a given extension.
 
 #Dependencies
@@ -32,36 +32,48 @@ for nstlobject,link in nonstandardlibraries.items():
 import pandas as pd
 
 print('#Script: fasta2distribution.py')
-print('#Version: v20240713')
-print('#Usage: python fasta2distribution.py <input_ext> <distribution_file> <assembliesnames_file>')
+print('#Version: v20241212')
+print('#Usage: python fasta2distribution.py <datasets> <input_ext> <distribution_file> <assembliesnames_file>')
+print('#<datasets> must be the directory containing the FASTA files with <input_ext>. (trailing slash optional) (required)')
 print("#<input_ext> must be the filename extension of the input FASTA files. It is assumed that the header will start with the protein accessions, followed by the assembly accession, and then anything else, separated by a space. (required)")
 print('#<distribution_file> must be the name of the output file that will contain the taxonomic distribution of the sequences in the input FASTA files. (required)')
 print('#<assembliesnames_file> must be a tab-delimited file with all assembly-name pairs. (required)')
 print('#For more information refer to the comments in the script and/or the Github page.')
 
 # Check if the correct number of arguments is given
-if len(sys.argv) == 4:
-    print ('Three arguments found. Proceeding.')
+if len(sys.argv) == 5:
+    print ('Four arguments found. Proceeding.')
 else:
     print('Wrong number of arguments given. Exiting.')
     sys.exit(1)
 
-input_ext = sys.argv[1]
+
+input_ext = sys.argv[2]
 if input_ext.startswith('.') == False: #This is not absolutely necessary, since os.path.splitext will detect the extension anyway. It's more of a precaution against double dots.
     input_ext = str('.' + input_ext)
 
-#Check if files with a given extension exist in the working directory and create a list of them.
-filenames = []
-for fname in os.listdir('.'):
-    if fname.endswith(input_ext):
-        filenames.append(fname)
-if len(filenames) > 0:
-    print('File(s) with the input extension found in the working directory. Proceeding.')
+#Checkpoint for datasets directory existence and trailing slash. Convert to abspath to make sure there are no issues when called through doggo_sniff.
+if os.path.exists(sys.argv[1]) == True:
+    print ('Datasets directory found. Proceeding.')
+    datasetsdir = os.path.abspath(sys.argv[1])
+    datasetsdir = os.path.join(datasetsdir, '')
 else:
-    print('No files with the input extension found in the working directory. Exiting.')
+    print ('Datasets directory not found. Exiting.')
     sys.exit(1)
 
-if os.path.isfile(sys.argv[3]) == True:
+#Check if files with a given extension exist in the datasets directory and create a list of them.
+filenames = []
+for fname in os.listdir(datasetsdir):
+    if fname.endswith(input_ext):
+        fname = os.path.join(datasetsdir, fname)
+        filenames.append(fname)
+if len(filenames) > 0:
+    print('File(s) with the input extension found in the datasets directory. Proceeding.')
+else:
+    print('No files with the input extension found in the datasets directory. Exiting.')
+    sys.exit(1)
+
+if os.path.isfile(sys.argv[4]) == True:
     print('Assembliesnames file found. Proceeding.')
 else:
     print('Assembliesnames file not found. Exiting.')
@@ -69,19 +81,19 @@ else:
 
 #Remove any previous output files with the same name.
 print ('Removing files with names identical to the output.')
-removal = ('rm -r *.distro ' + sys.argv[2] + ' 2> /dev/null')
+removal = ('rm -r *.distro ' + sys.argv[3] + ' 2> /dev/null')
 os.system(removal)
 
 print ('Creating individual distribution files.')
 assemblies_names_dict = {}  # dictionary { assembly : name }
-with open(sys.argv[3], 'r') as file:
+with open(sys.argv[4], 'r') as file:
     for line in file:
         assembly, name = line.strip().split('\t')
         assemblies_names_dict[assembly] = name
 
 for fname2 in filenames:
     #separate the fasta file stem to use for the output and log files.
-    filestem = os.path.splitext(fname2)[0]
+    filestem = str(os.path.basename(fname2).split(os.extsep, 1)[0])
     with open(fname2, 'r') as infile, open(str(filestem + '.distro'), 'w') as outfile:
         for assembly, name in assemblies_names_dict.items():
             distribution = str(assembly + '\t' + name)
@@ -112,7 +124,7 @@ for file_path in os.listdir('.'):
 
         filestem2 = os.path.splitext(os.path.basename(file_path))[0]
 
-        headers = ['taxon_name', 'assembly'] + [filestem2] * (len(max_substrings_row) - 2)
+        headers = ['assembly', 'taxon_name'] + [filestem2] * (len(max_substrings_row) - 2)
 
         # Write the headers and processed rows back to the file
         with open(file_path, 'w') as file:
@@ -136,8 +148,8 @@ files = [file for file in os.listdir('.') if file.endswith('.distro')]
 for file in files:
     df = pd.read_csv(file, sep='\t', dtype=str)
 
-    # Extract the first two columns (assuming they are named 'taxon_name' and 'assembly')
-    first_two_columns = df[['taxon_name', 'assembly']]
+    # Extract the first two columns (assuming they are named 'assembly' and 'taxon_name')
+    first_two_columns = df[['assembly', 'taxon_name']]
 
     # Extract all columns after the second one (headers)
     remaining_columns = df.iloc[:, 2:]
@@ -152,7 +164,7 @@ final_matrix = pd.concat([first_two_columns, concatenated_matrix], axis=1)
 final_matrix.columns = [col.split('.')[0] for col in final_matrix.columns]
 
 # Write the final matrix to a new tab-separated file
-final_matrix.to_csv(sys.argv[2], sep='\t', index=False)
+final_matrix.to_csv(sys.argv[3], sep='\t', index=False)
 
 print ('Removing individual distribution files.')
 # Remove individual distribution files

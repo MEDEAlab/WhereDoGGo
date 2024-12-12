@@ -6,10 +6,10 @@
 #THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #Function
-#This script checks which assemblies in from GTDB metadata are not found among all NCBI assemblies for a given domain. These become the ignore list. They are also looked up against NCBI for their organism names.
+#This script checks which assemblies from GTDB metadata are not found among all NCBI assemblies for a given domain. These become the ignore list. They are also looked up against NCBI for their organism names.
 #The process is repeated for atypical assemblies in NCBI and local asssemblies neither in the non-atypical list, nor in the ignore list. For those their names and atypical warnings are also fetched.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 #TODO: In its current version, the script misses some edge cases e.g., ones that have been removed/suppressed from the Assembly database but a genome is available in the Nucleotide database. Should update with double-checking through full domain downloads.
 
 #Dependencies
@@ -28,7 +28,7 @@ fi
 
 cat << EndOfMessage
 #Script: createignore.sh
-#Version: v20240713
+#Version: v20241212
 #Usage: createignore.sh <input_file> <taxon> <domain>
 #<input_file> must be a file with tab-delimited GTDB metadata (original or parsed). (required)
 #<taxon> must be the GTDB taxon for which the ignorelist will be created. (required)
@@ -71,7 +71,7 @@ fi
 echo "Removing any existing assemblies files for the taxon given and creating a new one."
 rm -r "$taxon".assemblies 2> /dev/null
 perl -p -e 's/^\w*?_(.*?)\.\d+\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t.*?\t(.*?)\t.*/$1\t$2/g' "$input_file" | grep "$taxon" | perl -p -e 's/^(.*?)\t.*/$1/g' | perl -p -e 's/^GCF_/GCA_/g' >> "$taxon".assemblies
-if [ $(wc -l < "$taxon".assemblies) -gt 0 ] ; then
+if [ $(wc -l < "$taxon".assemblies | sed 's/ //g') -gt 0 ] ; then
   echo "Assemblies found for the taxon given in the input metadata file. Proceeding."
 else
   echo "No assemblies found for the taxon given in the input metadata file (resulted in empty file). Exiting."

@@ -9,7 +9,7 @@
 #This script will predict ORFs with Pyrodigal for the contig/scaffold genome files in a directory (names given as a list of assemblies, file extension of the files is given by the user)
 #TODO: Make another version that uses Bakta (or Prokka) to include annotations in the headers.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 #NOTE 2: This is the WhereDoGGo? version of the script that assumes that a correctly formatted (genbank only, versionless, 1/line, assembly & name tab-delimited) assembliesnames file is present in the working directory.
 #All genome files in the contigs directory are used for ORF prediction indiscriminately.
 #TODO: Have the script run off a list of assemblies instead?
@@ -32,7 +32,7 @@ fi
 
 cat << EndOfMessage
 #Script: contigs2orfs.sh
-#Version: v20240713
+#Version: v20241212
 #Usage: contigs2orfs.sh <assemblies> <contigs> <filext> <whatwematch> <code25>
 #<assemblies> must be a text file of versionless assemblies (1/line). (required)
 #<contigs> must be the path to the directory containing the genome files (as contigs). (trailing slash optional) (required)
@@ -58,6 +58,19 @@ then
 	echo "Assemblies file found. Proceeding."
 else
 	echo "Assemblies file not found. Exiting."
+	exit 1
+fi
+
+#Isolate the stem of the assemblies file name as a separate variable to avoid any issues with extensions.
+baseassemblies="$(basename "$assemblies" | perl -p -e 's/^(.*?)\..*/$1/g')"
+
+#Check if the .assembliesnames file exists in the working directory, otherwise exit.
+#TODO: Maybe check if the assembliesnames content and formatting is correct? (and thus remove NOTE 2)
+if [ -f "$baseassemblies".assembliesnames ]
+then
+	echo "Assembliesnames file found. Proceeding."
+else
+	echo "Assembliesnames file not found in the working directory. Exiting."
 	exit 1
 fi
 
@@ -105,24 +118,11 @@ fi
 #Check if there exists at least one file with the chosen extension in the genome directory, otherwise exit.
 #We were checking with ls before but when trying to download all Bacteria, it goes way above ARGMAX.
 #If this find command is run without $contigs assigned, it will fail (without the quotes it will default to current directory). If $filext is not assigned it will find everything (because it defaults to an asterisk).
-if [ $(find "$contigs" -mindepth 1 -maxdepth 1 -name "*$filext" | wc -l) -gt 0 ]; then
+if [ $(find "$contigs" -mindepth 1 -maxdepth 1 -name "*$filext" | wc -l | sed 's/ //g') -gt 0 ]; then
   echo "File(s) with the given extension found in the contig directory. Proceeding."
 else
   echo "No files with given extension found in the contig directory. Exiting."
   exit 1
-fi
-
-#Isolate the stem of the assemblies file name as a separate variable to avoid any issues with extensions.
-baseassemblies="$(basename "$assemblies" | perl -p -e 's/^(.*?)\..*/$1/g')"
-
-#Check if the .assembliesnames file exists in the working directory, otherwise exit.
-#TODO: Maybe check if the assembliesnames content and formatting is correct? (and thus remove NOTE 2)
-if [ -f "$baseassemblies".assembliesnames ]
-then
-	echo "Assembliesnames file found. Proceeding."
-else
-	echo "Assembliesnames file not found in the working directory. Exiting."
-	exit 1
 fi
 
 #For any given assemblies file, remove all the files a previous run would have produced to avoid clashes.
@@ -182,7 +182,7 @@ for i in "$baseassemblies"_orfs/*.faa ; do
 		modder="$(perl -n -e 'BEGIN { $matcher = pop } print if m/^.*?\t$matcher\n/' "$baseassemblies".assembliesnames "$filestem")"
 	fi
 	#Remove all asterisks from the faa files. These (as far as we've encountered) correspond to stop codons.
-	#TODO: At some point we need to check if stop codons can occur mid-sequence by checking all Bacteria and Archaea. We don't really care about them in headers (and in WhereDoGGo? they shouldn't occur anyway).
+	#TODO: At some point we need to check how often stop codons can occur mid-sequence by checking all Bacteria and Archaea. We don't really care about them in headers (and in WhereDoGGo? they shouldn't occur anyway).
 	perl -p -i -e 's/\*//g' "$i"
 	#Modify the pyrodigal output faa headers by keeping only the first element (accession kinda), and adding the modder separated by a tab.
 	#We get rid of the rest of the header as it's not particularly informative for WhereDoGGo?.

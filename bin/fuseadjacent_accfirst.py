@@ -8,17 +8,16 @@
 #Function
 #This script fuses fragmented ORFs (determined from successive accession numbers) from a fasta file into a new fasta file.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 #NOTE 2: The script assumes that the FASTA headers were produced by Pyrodigal, as used in doggo_sniff.
-#NOTE 3: This is the WhereDoGGo? version of the script that works on all files in the working directory with a given extension.
 
 #Dependencies
 #1) Biopython (https://biopython.org/wiki/Download or https://anaconda.org/conda-forge/biopython)
 
 import os
 import re
-import sys
 import statistics
+import sys
 
 #Check if required non-standard libraries are installed.
 import importlib.util
@@ -34,50 +33,61 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 
 print('#Script: fuseadjacent.py')
-print('#Version: v20240713')
-print('#Usage: python fuseadjacent.py <input_ext> <output_ext>')
-print('#must be the extension of the alignment FASTA files in the working directory that will be checked for adjacent fragmented sequences. Temporary files with unfused and fused sequences in single-line FASTA (aka nice FASTA) will be created. The stem of each file is retained for the temporary and output files. (leading dot optional). (required)')
+print('#Version: v20241212')
+print('#Usage: python fuseadjacent.py <datasets> <input_ext> <output_ext> <output_log>')
+print('#<datasets> must be the directory containing the FASTA files with <input_ext>. (trailing slash optional) (required)')
+print('#<input_ext> must be the extension of the alignment FASTA files in the working directory that will be checked for adjacent fragmented sequences. Temporary files with unfused and fused sequences in single-line FASTA (aka nice FASTA) will be created. The stem of each file is retained for the temporary and output files. (leading dot optional). (required)')
 print('#<output_ext> must be the extension of the FASTA files where the fused and unfused sequences sequences will be written in single-line format. (leading dot optional) (required)')
 print('#<output_log> must be the name of the output log file that will contain the fused sequence accessions. (required)')
 print('#For more information refer to the comments in the script and/or the Github page.')
 
 # Check if the correct number of arguments is given
-if len(sys.argv) == 4:
-    print ('Three arguments found. Proceeding.')
+if len(sys.argv) == 5:
+    print ('Four arguments found. Proceeding.')
 else:
     print('Wrong number of arguments given. Exiting.')
     sys.exit(1)
 
 #Check if the extensions start with a dot, otherwise add them.
-input_ext = sys.argv[1]
-output_ext = sys.argv[2]
+input_ext = sys.argv[2]
+output_ext = sys.argv[3]
 if input_ext.startswith('.') == False: #This is not absolutely necessary, since os.path.splitext will detect the extension anyway. It's more of a precaution against double dots.
     input_ext = str('.' + input_ext)
 if output_ext.startswith('.') == False:
     output_ext = str('.' + output_ext)
 
+#Checkpoint for datasets directory existence and trailing slash. Convert to abspath to make sure there are no issues when called through doggo_sniff.
+if os.path.exists(sys.argv[1]) == True:
+    print ('Datasets directory found. Proceeding.')
+    datasetsdir = os.path.abspath(sys.argv[1])
+    datasetsdir = os.path.join(datasetsdir, '')
+else:
+    print ('Datasets directory not found. Exiting.')
+    sys.exit(1)
+
 #Check if files with a given extension exist in the working directory and create a list of them.
 filenames = []
-for fname in os.listdir('.'):
+for fname in os.listdir(datasetsdir):
     if fname.endswith(input_ext):
+        fname = os.path.join(datasetsdir, fname)
         filenames.append(fname)
 if len(filenames) > 0:
-    print('File(s) with the input extension found in the working directory. Proceeding.')
+    print('File(s) with the input extension found in the datasets directory. Proceeding.')
 else:
-    print('No files with the input extension found in the working directory. Exiting.')
+    print('No files with the input extension found in the datasets directory. Exiting.')
     sys.exit(1)
 
 #Remove any previous output files with the same name.
 print('Removing files with names identical to the output.')
-removal = ('rm -r *' + input_ext + 'nice *.faafusednice *' + output_ext + ' 2> /dev/null')
+removal = ('rm -r *' + input_ext + 'nice *.faafusednice *' + output_ext + ' ' + sys.argv[4] + ' 2> /dev/null')
 os.system(removal)
 
 print('Creating temporary alignment files in single-line FASTA format.')
 # modify each multi-line fasta alignment into single-line
 for fname2 in filenames:
     #Separate the fasta file stem to use for the temporary single-line alignment files.
-    filestem = os.path.splitext(fname2)[0]
-    with open(str(filestem + input_ext), 'r') as multi_input, open(str(filestem + input_ext + 'nice'), 'w') as single_temp:
+    filestem = str(os.path.basename(fname2).split(os.extsep, 1)[0])
+    with open(str(datasetsdir + filestem + input_ext), 'r') as multi_input, open(str(filestem + input_ext + 'nice'), 'w') as single_temp:
         block = []
         for line in multi_input:
             if line.startswith('>'):
@@ -90,11 +100,11 @@ for fname2 in filenames:
         if block:
             single_temp.write(''.join(block) + '\n')
 
-print('Fusing fragmented adjacent sequences.')
-output_log = open(sys.argv[3], 'w')
+print('Fusing fragmented adjacent sequences and writing accessions to log.')
+output_log = open(sys.argv[4], 'w')
 for fname3 in filenames:
-    output_log.write(fname3 + '\n')
-    filestem = os.path.splitext(fname3)[0]
+    filestem = str(os.path.basename(fname3).split(os.extsep, 1)[0])
+    output_log.write(filestem + input_ext + '\n')
     outfile = open(str(filestem + '.faafusednice'), 'a')
     # make header-sequence dictionary
     with open(str(filestem + input_ext + 'nice'), 'r') as fasta_file:
@@ -397,9 +407,9 @@ for fname3 in filenames:
 #Remove gaps from the output FASTA files.
 print('Dealigning output FASTA files.')
 for fname4 in filenames:
-    filestem = os.path.splitext(fname4)[0]
+    filestem = str(os.path.basename(fname4).split(os.extsep, 1)[0])
     with open(str(filestem + output_ext), 'w') as o:
-        for record in SeqIO.parse(str(filestem + '.faafusednice'), "fasta"):
+        for record in SeqIO.parse(filestem + '.faafusednice', "fasta"):
             record.seq = record.seq.replace(gap, "")
             SeqIO.write(record, o, "fasta")
 

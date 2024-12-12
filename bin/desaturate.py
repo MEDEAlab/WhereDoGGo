@@ -8,7 +8,7 @@
 #Function
 #This script removes positions fast-evolving from a fasta alignment using a file with site-specific rates, to produce a number of desaturated alignments based on a given number of quantiles.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #1) Biopython (https://biopython.org/wiki/Download or https://anaconda.org/conda-forge/biopython)
@@ -36,7 +36,7 @@ import numpy as np
 import pandas as pd
 
 print('#Script: desaturate.py')
-print('#Version: v20240713')
+print('#Version: v20241212')
 print('#Usage: python desaturate.py <rates> <quantiles> <alignment>')
 print('#<input_rates> must be a file containing site-specific rates for <input_alignment> produced by IQ-TREE\'s --rate or --mlrate options. (required)')
 print('#<input_quantiles> must be the number (integer) of quantiles of retained positions. The original alignment, the empty alignment, and anything with more than 90% of positions removed are omitted. For example, for <input_quantiles> = 20, 18 alignments will be produced from 5% of positions retained, up to 90%. (required)')
@@ -152,3 +152,5 @@ for bin_edge in bins_edges_list_reversed:
 
 # Close the output file.
 outfile.close()
+
+print('All done!')

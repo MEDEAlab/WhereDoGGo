@@ -8,7 +8,7 @@
 #Function
 #This is the WhereDoGGo? wrapper for running phylogenies in IQ-TREE.
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
 #Dependencies
 #1) Biopython (https://biopython.org/wiki/Download or https://anaconda.org/conda-forge/biopython)
@@ -99,9 +99,9 @@ __        ___                   ____         ____  ____      ___
 
                     """)
 
-parser = argparse.ArgumentParser(description="Henlo, am doggo v20240713. Need halp so I get zoomies?")
+parser = argparse.ArgumentParser(description="Henlo, am doggo v20241212. Need halp for zoomies?")
 parser.add_argument("-i", "--input", required=True, help="INPUT must be the input FASTA file. (required)")
-parser.add_argument("-MFP", "--MFP", action='store_true', help="MFP will run IQ-TREE with MODELFINDER to select the model (matrices: LG, WAG, JTT; frequencies: FU,F,FO). (optional)")
+parser.add_argument("-MFP", "--MFP", action='store_true', help="MFP will run IQ-TREE with MODELFINDER to select the model (matrices: LG, Q.pfam, WAG, JTT; frequencies: FU,F,FO). (optional)")
 parser.add_argument("-C60", "--C60", action='store_true', help="C60 will run IQ-TREE with the C60 mixture model under the matrix picked by MFP (and with the MFP phylogeny as guide tree under the PMSF approximation) or LG (if the MFP log and phylogeny not available) and 10 FreeRate categories i.e., LG (or WAG or JTT )+C60+R10. (optional)")
 parser.add_argument("-SR4", "--SR4", action='store_true', help="SR4 will recode data to the 4-state SR alphabet and run IQ-TREE as with the MFP option but with the GTR4 matrix. (optional)")
 parser.add_argument("-SR4C60", "--SR4C60", action='store_true', help="SR4C60 will recode data to the 4-state SR alphabet and run IQ-TREE with the SR4C60 model. If available, the SR4 phylogeny will be used as guide tree. (optional)")
@@ -114,7 +114,7 @@ parser.add_argument("-AUclade", "--AUclade", required=False, help="AUclade must 
 parser.add_argument("-leaves", "--leaves", required=True, help="LEAVES must be a text file with complete leaf names that will be used to converting them in the phylogenies e.g., an .assembliesnames file. All instances of tab-delimitation will be converted to spaces. (required)")
 args=parser.parse_args()
 
-print('Henlo, am doggo v20240713. I get zoomies nao. I speak info messages in hooman lingo.' + '\n')
+print('Henlo, am doggo v20241212. I get zoomies nao. I speak info messages in hooman lingo.' + '\n')
 
 concat_file_stem = str(os.path.basename(args.input).split(os.extsep, 1)[0])
 concat_file_ext = str('.' + str(os.path.basename(args.input).split(os.extsep, 1)[1])) # we have to add the '.' before the extension
@@ -195,7 +195,7 @@ if args.AU is not None:
 #TODO: It might be easier to convert all these commands to for loops.
 if args.MFP:
     print('Running phylogeny with the MFP option.')
-    run_MFP = str('mkdir ' + concat_file_stem + '_MFP && cp ' + args.input + ' ' + concat_file_stem + '_MFP/ && cd ' + concat_file_stem + '_MFP && iqtree2 -quiet -s ' + concat_file_stem + concat_file_ext + ' -m MFP -mset JTT,WAG,LG -mfreq FU,F,FO -bb 1000 -alrt 1000 -nt AUTO')
+    run_MFP = str('mkdir ' + concat_file_stem + '_MFP && cp ' + args.input + ' ' + concat_file_stem + '_MFP/ && cd ' + concat_file_stem + '_MFP && iqtree2 -quiet -s ' + concat_file_stem + concat_file_ext + ' -m MFP -mset LG,Q.pfam,WAG,JTT -mfreq FU,F,FO -bb 1000 -alrt 1000 -nt AUTO')
     if os.WEXITSTATUS(os.system(run_MFP)) == 1:
         print('Error when running phylogeny with the MFP option. Exiting.')
         sys.exit(1)
@@ -330,11 +330,11 @@ if args.GHOST:
             A = len(line.strip())  # Count characters in the sequence
             n += 1
     # Calculate the maximum value of k (cmax)
-    k = int(((A/10)+1) // ((2 * n) + 17)) ## the // returns the min integer
+    k = int((A - 180) // ((20 * n) - 20)) ## the // returns the min integer
     cmax = k
     cmax = str(cmax)
-    print(cmax)
-    run_GHOST = str('mkdir ' + concat_file_stem + '_GHOST && cp ' + args.input + ' ' + concat_file_stem + '_GHOST/ && cd ' + concat_file_stem + '_GHOST && iqtree2 -quiet -s ' + concat_file_stem + concat_file_ext + ' -mset JTT,WAG,LG -mrate H,*H -cmax ' + cmax + ' -mfreq F,FU,FO -bb 1000 -alrt 1000 -nt AUTO')
+    #print(cmax)
+    run_GHOST = str('mkdir ' + concat_file_stem + '_GHOST && cp ' + args.input + ' ' + concat_file_stem + '_GHOST/ && cd ' + concat_file_stem + '_GHOST && iqtree2 -quiet -s ' + concat_file_stem + concat_file_ext + ' -mset LG,Q.pfam,WAG,JTT -mrate H,*H -cmax ' + cmax + ' -mfreq F,FU,FO -bb 1000 -alrt 1000 -nt AUTO')
     if os.WEXITSTATUS(os.system(run_GHOST)) == 1:
         print('Error when running phylogeny with the GHOST option. Exiting.')
         sys.exit(1)
@@ -375,7 +375,7 @@ if args.desat is not None:
                 print('Error when recoding desaturated datasets for ' + desat_dataset + ' analysis. Exiting.')
                 sys.exit(1)
         if desat_dataset== "MFP":
-            run_desaturation = str('cd ' + concat_file_stem + '_desat_' + desat_dataset + ' && for i in *.faa ; do iqtree2 -quiet -s $i -m MFP -mset JTT,WAG,LG -mfreq FU,F,FO -bb 1000 -alrt 1000 -nt AUTO ; done')
+            run_desaturation = str('cd ' + concat_file_stem + '_desat_' + desat_dataset + ' && for i in *.faa ; do iqtree2 -quiet -s $i -m MFP -mset LG,Q.pfam,WAG,JTT -mfreq FU,F,FO -bb 1000 -alrt 1000 -nt AUTO ; done')
         if desat_dataset== "C60":
             matrix_C60_command = str('grep "Command\\:" ' + concat_file_stem + '_C60/' + concat_file_stem + concat_file_ext + '.log | perl -p -e \'s/^.*? -m (.*?)\\+.*/$1/\'')
             matrix_C60 = subprocess.check_output(matrix_C60_command, shell=True, universal_newlines=True).strip()

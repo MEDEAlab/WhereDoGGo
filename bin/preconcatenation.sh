@@ -11,26 +11,42 @@
 #Dependencies
 #NONE
 
-#NOTE 1: All code was written and tested on Intel macOS and Ubuntu. Please report any issues.
-#NOTE 2: This is the WhereDoGGo? version of the script that runs on alignments and outputs in the working directory. We've only retained the option of alignment extensions.
+#NOTE 1: All code was written and tested on Intel or ARM macOS and Ubuntu. Please report any issues.
 
-filext="$1"
+alignments="$1"
+filext="$2"
 
 cat << EndOfMessage
 #Script: preconcatenation.sh
-#Version: v20240713
-#Usage: preconcatenation.sh <filext>
+#Version: v20241212
+#Usage: preconcatenation.sh <alignments> <filext>
+#<alignments> must be the path to the directory containing the alignment files. (trailing slash optional) (required)
 #<filext> must be the filename extension of the alignment files. (leading dot optional) (required)
 #For more information refer to the comments in the script and/or the Github page.
 EndOfMessage
 
 #Check if the number of arguments is correct, otherwise exit.
-if [ "$#" -eq 1 ]
+if [ "$#" -eq 2 ]
 then
-	echo "One argument found. Proceeding."
+	echo "Two arguments found. Proceeding."
 else
 	echo "Wrong number of arguments given. Exiting."
 	exit 1
+fi
+
+#Check if the directory containing the alignments exists, otherwise exit.
+if [ -d $alignments ]
+then
+	echo "Alignments directory found. Proceeding."
+else
+	echo "Alignments directory not found. Exiting."
+	exit 1
+fi
+
+#Check if the user provided a path ending with a slash ("/"), otherwise add it.
+if [[ $alignments != *\/ ]]
+then
+	alignments="${alignments}/"
 fi
 
 #Check if the extension provided starts with a dot, otherwise add it.
@@ -40,10 +56,10 @@ then
 fi
 
 #Check if there exists at least one file with the chosen extension in the working directory, otherwise exit.
-if [ $(find . -mindepth 1 -maxdepth 1 -name "*$filext" | wc -l) -gt 0 ]; then
-  echo "File(s) with the given extension found in the contig directory. Proceeding."
+if [ $(find "$alignments" -mindepth 1 -maxdepth 1 -name "*$filext" | wc -l | sed 's/ //g') -gt 0 ]; then
+  echo "File(s) with the given extension found in the alignments directory. Proceeding."
 else
-  echo "No files with given extension found in the contig directory. Exiting."
+  echo "No files with given extension found in the alignments directory. Exiting."
   exit 1
 fi
 
@@ -53,29 +69,31 @@ rm -r taxa.names dataset.names dataset.numbers taxa.numbers multiples.check data
 
 #Determine the number of taxa that will go into the concatenation.
 echo "Creating taxa.names file."
-for i in *"${filext}" ; do grep ">" $i | perl -p -e 's/>(.*?) .*/$1/gm' ; done | sort | uniq >> taxa.names
+for i in "${alignments}"*"${filext}" ; do grep ">" $i | perl -p -e 's/>(.*?) .*/$1/gm' ; done | sort | uniq >> taxa.names
 
 #Write the names of the datasets to be concatenated.
 echo "Creating dataset.names file."
-for i in *"${filext}" ; do echo $i >> dataset.names ; done
+for i in "${alignments}"*"${filext}" ; do echo "$(basename $i)" >> dataset.names ; done
 
 #Calculate the number of taxa per file.
 echo "Creating dataset.numbers file."
-for i in *"${filext}" ; do
-  count1=$(grep ">" "$i" | wc -l)
-  echo -e "${i}\t${count1}" >> dataset.numbers
+for i in "${alignments}"*"${filext}" ; do
+  count1=$(grep ">" "$i" | wc -l | sed 's/ //g')
+	dataset1=$(basename $i)
+  echo -e "${dataset1}\t${count1}" >> dataset.numbers
 done
 
 #Calculate the number of sequences per taxon.
 echo "Creating taxa.numbers file."
-while IFS= read -r line ; do echo -e "$line\t$(egrep "^>$line " *"${filext}" 2> /dev/null | wc -l)" >> taxa.numbers ; done < taxa.names
+while IFS= read -r line ; do echo -e "$line\t$(egrep "^>$line " "${alignments}"*"${filext}" 2> /dev/null | wc -l | sed 's/ //g')" >> taxa.numbers ; done < taxa.names
 
 #Check for multiple sequences.
 echo "Checking for multiplicate sequences. Creating multiples.check file."
 while IFS= read -r line; do
-  for i in *"${filext}"; do
-    count2=$(egrep "^>$line " "$i" 2> /dev/null | wc -l)
-    echo -e "${i}\t${line}\t${count2}" >> multiples.check
+  for i in "${alignments}"*"${filext}"; do
+    count2=$(egrep "^>$line " "$i" 2> /dev/null | wc -l | sed 's/ //g')
+		dataset2=$(basename $i)
+    echo -e "${dataset2}\t${line}\t${count2}" >> multiples.check
   done
 done < taxa.names
 
@@ -93,7 +111,7 @@ done < multiples.check
 #Check which datasets have >50% of the taxa; the rest will be ignored for the final concatenation.
 echo "Checking which datasets have >50% of taxa present. Creating dataset.pass and dataset.notpass files."
 touch dataset.pass dataset.notpass
-threshold="$(($(wc -l < taxa.names)/2))"
+threshold="$(($(wc -l < taxa.names | sed 's/ //g')/2))"
 while IFS= read -r line; do
   threshcheck=$(echo "$line" | perl -p -e 's/^.*?\t(\d+)/$1/')
   whichdataset=$(echo "$line" | perl -p -e 's/^(.*?)\t.*/$1/')
