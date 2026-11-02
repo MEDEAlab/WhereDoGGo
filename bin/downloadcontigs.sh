@@ -56,7 +56,7 @@ baseassemblies="$(basename "$assemblies" | perl -p -e 's/^(.*?)\..*/$1/g')"
 #For any given assemblies file, remove all the files a previous run would have produced to avoid clashes.
 #All output will be in the working directory.
 echo "Removing files and directories with names identical to the output."
-rm -r "$baseassemblies"_contigs/ "$baseassemblies".failed "$baseassemblies".retry ncbi_dataset.zip ncbi_dataset/ 2> /dev/null
+rm -r "$baseassemblies"_contigs/ "$baseassemblies".failed "$baseassemblies".retry ncbi_dataset.zip fetched_dataset/ 2> /dev/null
 
 creationtime="$(echo $(TZ=UTC date '+%Y-%m-%d-%H-%M-%S'))"
 echo "This script was run at $creationtime UTC."
@@ -72,21 +72,25 @@ perl -p -i -e 's/^(GCA_\d+?)\.\d+/$1/g' "$assemblies"
 
 #Download genomes (Genbank, latest version) with ncbi-datasets-cli.
 echo "Downloading contig datasets from GenBank."
-datasets download genome accession --inputfile "$assemblies" --assembly-source GenBank --assembly-version latest
+datasets download genome accession --inputfile "$assemblies" --assembly-source GenBank --assembly-version latest --dehydrated
 
 #Unzip the contig fna files from the downloaded zip file (we haven't changed the default name ncbi_dataset.zip). We don't care about the readme, json assembly reports etc. Then remove the zip file to save disk space.
 echo "Uncompressing genome files."
-touch "$baseassemblies".retry
 mkdir "$baseassemblies"_contigs/
-#Unzip the fna files.
-#If any of the downloaded genome files are corrupted (usually because of an unstable internet connection), an error message "error:  invalid compressed data to inflate" followed by the file will be passed.
-#From these messages we extract versionless assemblies and redirect them to the .retry file, ignoring other error messages.
-unzip -q -j -d "$baseassemblies"_contigs/ ncbi_dataset.zip '*.fna' 2>&1 >/dev/null | grep 'invalid compressed data to inflate' | perl -p -e 's/^.*?_contigs\/(GCA_\d+?)\..*/$1/g' > "$baseassemblies".retry
+#Unzip the dehydrated files.
+unzip -q ncbi_dataset.zip -d fetched_dataset
 rm ncbi_dataset.zip
+
+#Rehydrate (actual download of the assemblies)
+datasets rehydrate --directory fetched_dataset/
+
+#check for ccorrupted downloads
+cd fetched_dataset/ && md5sum -c --quiet md5sum.txt 2>1 | perl -pe 's/: FAILED.*//' > ../"$baseassemblies".retry && cd ..
 
 #Create a variable that will be used as a checkpoint for any downloaded corrupted genomes.
 declare -i corruptedcheck
 corruptedcheck=0
+attempt=0
 
 #If the .retry file is not empty, we enter a loop of retrying the downloads of any corrupted genomes until there are none left.
 if [ "$(wc -l < "$baseassemblies".retry | sed 's/ //g')" -gt 0 ]
@@ -100,15 +104,14 @@ then
 		else
 			echo ""$(wc -l < "$baseassemblies".retry | sed 's/ //g')" corrupted genome files detected in the previous download. Retrying for these genomes."
 		fi
-		#Remove the corrupted files to avoid conflicts with the new download.
+		#Remove the corrupted files from the fetch_dataset in order to rehydrate them again
 		echo "Removing corrupted genome files."
-		while IFS= read -r line; do rm -r "$baseassemblies"_contigs/"$line"* ; done < "$baseassemblies".retry
-		#Reattempt the downloads using the assembly list in the .retry file.
-		echo "Downloading contig datasets from GenBank."
-		datasets download genome accession --inputfile "$baseassemblies".retry --assembly-source GenBank --assembly-version latest
-		echo "Uncompressing genome files."
-		unzip -q -j -d "$baseassemblies"_contigs/ ncbi_dataset.zip '*.fna' 2>&1 >/dev/null | grep 'invalid compressed data to inflate' | perl -p -e 's/^.*?_contigs\/(GCA_\d+?)\..*/$1/g' > "$baseassemblies".retry
-		rm ncbi_dataset.zip
+		while IFS= read -r line; do rm -rf "$line" ; done < "$baseassemblies".retry
+		#Recycle dehydrated list
+		echo "Rehydrating again ..."
+		datasets rehydrate --directory fetched_dataset/
+		#Check md5sums
+		cd fetched_dataset/ && md5sum -c --quiet md5sum.txt 2>1 | perl -pe 's/: FAILED.*//' > ../"$baseassemblies".retry && cd ..
 		#If the retry file is now empty, change the value of corruptedcheck to break the loop.
 		if [ "$(wc -l < "$baseassemblies".retry | sed 's/ //g')" -eq 0 ]
 		then
@@ -116,11 +119,21 @@ then
 			echo "No corrupted genome files detected in the previous download. Proceeding."
 			rm "$baseassemblies".retry
 		fi
+		#Add attemp count and break after three attempts
+		((attempt++))
+		if [ "$attempt" -eq 2 ]; then
+			echo "Some/all genomes failed to download after three attemps. Proceeding with donwloaded genomes"
+			break
+		fi
 	done
 else
 	echo "No corrupted genome files detected in the previous download. Proceeding."
 	rm "$baseassemblies".retry
 fi
+
+#Extract the .fna files into the contigs directory and remove fetched data
+mv fetched_dataset/ncbi_dataset/data/*/*.fna "$baseassemblies"_contigs/
+rm -rf fetched_dataset
 
 #Rename the dataset name stems to only a versionless assembly. This will make it easier to modify the headers later.
 #The new name is the minimum amount of characters until we encounter the first dot, including the preceding directory structure. We substitute the remaining characters with the extension .fna .
